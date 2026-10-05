@@ -1,0 +1,6 @@
+// bootstrap/app.php -> inside ->withMiddleware(function (Middleware $middleware) { ... })
+$middleware->alias([
+    'admin'  => \App\Http\Middleware\EnsureAdmin::class,
+    'active' => \App\Http\Middleware\EnsureActive::class,
+]);
+// Broadcasting routes (installed by `php artisan install:broadcasting`) must use the web+auth guard.

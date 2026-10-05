@@ -1,0 +1,11 @@
+// app/Http/Middleware/HandleInertiaRequests.php  -> replace share():
+public function share(Request $request): array
+{
+    return [
+        ...parent::share($request),
+        'auth' => ['user' => $request->user()],              // includes avatar_url accessor
+        'unread' => fn () => $request->user()?->unreadNotifications()->count() ?? 0,
+        'flash' => ['success' => fn () => $request->session()->get('success')],
+    ];
+}
+// Ziggy: Breeze already installs it so route() works in React.

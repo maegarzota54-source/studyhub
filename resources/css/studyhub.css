@@ -1,0 +1,15 @@
+/* Tailwind v4: put this @theme block in resources/css/app.css after @import "tailwindcss";
+   Tailwind v3: add the same colors under theme.extend.colors in tailwind.config.js. */
+@theme {
+  --color-hunter-50: #eef4ef;
+  --color-hunter-100: #d6e5d9;
+  --color-hunter-500: #4a7c52;
+  --color-hunter-600: #3f6a46;
+  --color-hunter-700: #355E3B;   /* primary */
+  --color-hunter-800: #2a4a2f;
+  --color-hunter-900: #1d3321;
+  --color-raspberry-500: #E30B5C; /* accent */
+  --color-raspberry-600: #C81E51;
+  --color-cool-100: #F3F4F6;      /* page background */
+  --color-slate-900: #1F2937;     /* text / dark surfaces */
+}
