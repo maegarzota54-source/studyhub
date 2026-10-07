@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight, CalendarDays, FolderOpen, LineChart, MessageSquare, Send, Video } from 'lucide-react';
 import ShStyle from '@/Components/ShStyle';
-import StudyOrbit from '@/Components/StudyOrbit';
+
 
 const SUBJECTS = [
     { n: 'Information Assurance security', tone: '#355E3B' }, { n: 'System Integration and Architecture', tone: '#4a7c52' }, { n: 'Project Management', tone: '#1F2937' },
@@ -144,9 +144,21 @@ export default function Welcome({ canLogin, canRegister }) {
                         <Link href={route('login')} className="sh-btn sh-btn-ghost">I already have an account</Link>
                     </div>
                 </div>
-                <div className="origin-top scale-[.85] sm:scale-100">
-                    <StudyOrbit label={`${subject.n} circle`} tone={subject.tone} size={380} />
+                <div className="relative mx-auto w-full max-w-lg">
+                <div className="absolute inset-6 rounded-full bg-[#d6e5d9]/70 blur-2xl" aria-hidden="true" />
+                    <img
+                    src="/images/study-group.jpg"
+                    alt="Four students studying together around open books"
+                    draggable="false"
+                    className="relative w-full select-none"
+                    style={{ mixBlendMode: 'multiply' }}
+                    />
+                    <div key={subject.n} className="sh-fade absolute bottom-6 left-4 flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#1d3321] shadow-lg">
+                        <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+                        {subject.n} circle
+                    </div>
                 </div>
+                
             </section>
 
             <section className="border-y border-gray-200 bg-white/60">

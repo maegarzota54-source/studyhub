@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # StudyHub: Group Circle System (overlay)
 
 This is an **overlay**: the StudyHub-specific files for a fresh Laravel + Breeze (React/Inertia) app.
@@ -80,3 +81,7 @@ Camera/mic require HTTPS or `localhost`.
 - No automated tests, rate limiting on uploads, antivirus scanning, or per-user storage quotas. Add these before production.
 - Group ratings and password-reset UI from the mockup are not built (Breeze covers password reset).
 - If your Tailwind is v3, the custom class names (`bg-hunter-700`, `text-raspberry-600`, `bg-cool-100`) need the colors added to the config as described above.
+=======
+# studyhub
+STUDYHUB-GROUP CIRCLE SYSTEM
+>>>>>>> 85d3a54ed30dc357011fd59dd0d0602886932c28
