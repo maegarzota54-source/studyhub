@@ -5,20 +5,38 @@ import ShStyle from '@/Components/ShStyle';
 import StudyOrbit from '@/Components/StudyOrbit';
 
 const QUOTES = [
-    'Small groups make big goals happen.',
-    'Study together, grow together.',
-    'Consistency beats cramming.',
-    'Teach it to someone and you will know it.',
-    'Progress, not perfection.',
+    'Alone we study. Together we understand.',
+    'A good study group turns "I don\'t get it" into "oh, now I see."',
+    'Explain it to a friend and you learn it twice.',
+    'Great grades are built one shared session at a time.',
+    'Nobody has to know everything when everyone brings something.',
+    'Your circle keeps you showing up, even on the days you would rather not.',
+    'Small group. Big focus.',
 ];
 
 function Quotes() {
     const [i, setI] = useState(0);
-    useEffect(() => { const t = setInterval(() => setI((n) => (n + 1) % QUOTES.length), 5500); return () => clearInterval(t); }, []);
+    const [paused, setPaused] = useState(false);
+
+    useEffect(() => {
+        if (paused) return;
+        const t = setInterval(() => setI((n) => (n + 1) % QUOTES.length), 6000);
+        return () => clearInterval(t);
+    }, [paused]);
+
     return (
-        <blockquote key={i} className="sh-display sh-fade min-h-[4.5rem] text-center text-2xl font-bold text-white" aria-live="polite">
-            “{QUOTES[i]}”
-        </blockquote>
+        <div className="w-full max-w-md text-center" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+            <blockquote key={i} className="sh-display sh-fade min-h-[7rem] text-2xl font-bold leading-snug text-white" aria-live="polite">
+                “{QUOTES[i]}”
+            </blockquote>
+            <div className="mt-3 flex justify-center gap-2" role="tablist" aria-label="Choose a quote">
+                {QUOTES.map((_, n) => (
+                    <button key={n} role="tab" aria-selected={n === i} aria-label={`Quote ${n + 1}`} onClick={() => setI(n)}
+                        className="h-2 rounded-full transition-all"
+                        style={{ width: n === i ? 24 : 8, background: n === i ? '#E30B5C' : 'rgba(255,255,255,.45)' }} />
+                ))}
+            </div>
+        </div>
     );
 }
 
