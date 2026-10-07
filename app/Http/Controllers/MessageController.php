@@ -6,6 +6,7 @@ use App\Models\{Message, NoteFile, StudyGroup, User};
 use App\Notifications\StudyHubNotice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Storage};
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class MessageController extends Controller
@@ -20,11 +21,22 @@ class MessageController extends Controller
     public function index(Request $request) {
         $u = $request->user();
         $contacts = $this->contacts($u);
+        // Most recent direct message per contact, so the list can show a preview and sort by activity.
+        $last = Message::whereNull('study_group_id')->whereNotNull('recipient_id')
+            ->where(fn ($q) => $q->where('sender_id', $u->id)->orWhere('recipient_id', $u->id))
+            ->latest()->limit(500)->get()
+            ->unique(fn ($m) => $m->sender_id === $u->id ? $m->recipient_id : $m->sender_id)
+            ->keyBy(fn ($m) => $m->sender_id === $u->id ? $m->recipient_id : $m->sender_id);
+        $contacts = $contacts->each(function ($c) use ($last) {
+            $m = $last->get($c->id);
+            $c->last_message = $m ? ($m->body ? Str::limit($m->body, 40) : '📎 '.$m->attachment_name) : null;
+            $c->last_at = $m?->created_at;
+        })->sortByDesc(fn ($c) => $c->last_at?->timestamp ?? 0)->values();
         $peer = $request->user_id ? $contacts->firstWhere('id', (int) $request->user_id) : null;
         $messages = $peer ? Message::whereNull('study_group_id')
             ->where(fn ($q) => $q->where(fn ($w) => $w->where('sender_id', $u->id)->where('recipient_id', $peer->id))
                 ->orWhere(fn ($w) => $w->where('sender_id', $peer->id)->where('recipient_id', $u->id)))
-            ->with('sender:id,name,avatar')->oldest()->limit(200)->get() : [];
+            ->with('sender:id,name,avatar')->withExists('savedFiles as saved')->oldest()->limit(200)->get() : [];
         return Inertia::render('Messages/Index', ['contacts' => $contacts->each->append('avatar_url'), 'peer' => $peer, 'messages' => $messages]);
     }
 
@@ -44,6 +56,7 @@ class MessageController extends Controller
             $m->attachment_size = $f->getSize();
         }
         $m->save();
+        if ($m->attachment_path) $this->autoSave($m);   // Phase 2: attachments land in Notes & Files automatically
         broadcast(new MessageSent($m))->toOthers();
         return $m;
     }
@@ -73,18 +86,41 @@ class MessageController extends Controller
         return Storage::download($message->attachment_path, $message->attachment_name);
     }
 
-    /** Copy a chat attachment into "Notes & Files". Group chats save into that group's repository. */
+    /**
+     * Phase 2: every file sent in chat is copied into Notes & Files automatically.
+     * Group chat -> one copy in that circle's repository. Direct chat -> a personal copy for each person.
+     * A failed copy must never stop the message from being sent, so errors are reported, not thrown.
+     */
+    private function autoSave(Message $m): void {
+        $targets = $m->study_group_id
+            ? [[$m->sender_id, $m->study_group_id]]
+            : [[$m->sender_id, null], [$m->recipient_id, null]];
+        foreach ($targets as [$userId, $groupId]) {
+            try { $this->copyToFiles($m, $userId, $groupId); } catch (\Throwable $e) { report($e); }
+        }
+    }
+
+    /** Each NoteFile gets its own physical copy, so deleting one person's item never breaks another's. */
+    private function copyToFiles(Message $m, int $userId, ?int $groupId): NoteFile {
+        $copy = 'files/'.Str::uuid().'_'.basename($m->attachment_path);
+        Storage::copy($m->attachment_path, $copy);
+        return NoteFile::create(['user_id' => $userId, 'study_group_id' => $groupId, 'message_id' => $m->id,
+            'kind' => 'file', 'title' => $m->attachment_name, 'path' => $copy,
+            'mime' => $m->attachment_mime, 'size' => $m->attachment_size]);
+    }
+
+    /** Fallback for files sent before auto-save existed. Safe to press twice: it won't duplicate. */
     public function saveToFiles(Request $request, Message $message) {
         $this->authorizeView($request, $message);
         abort_unless($message->attachment_path, 422, 'This message has no attachment.');
-        $copy = 'files/'.basename($message->attachment_path);
-        Storage::copy($message->attachment_path, $copy);
-        NoteFile::create(['user_id' => $request->user()->id, 'study_group_id' => $message->study_group_id,
-            'kind' => 'file', 'title' => $message->attachment_name, 'path' => $copy,
-            'mime' => $message->attachment_mime, 'size' => $message->attachment_size]);
+        $u = $request->user();
+        $exists = NoteFile::where('message_id', $message->id)
+            ->when($message->study_group_id, fn ($q) => $q->where('study_group_id', $message->study_group_id),
+                fn ($q) => $q->where('user_id', $u->id))->exists();
+        if ($exists) return back()->with('success', 'Already in Notes & Files.');
+        $this->copyToFiles($message, $u->id, $message->study_group_id);
         return back()->with('success', 'Saved to Notes & Files.');
     }
-
     public function flag(Request $request, Message $message) {
         $this->authorizeView($request, $message);
         $message->update(['is_flagged' => true]);

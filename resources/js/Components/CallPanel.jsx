@@ -1,71 +1,34 @@
-import { useEffect, useRef, useState } from 'react';
-import Peer from 'peerjs';
-import { Mic, MicOff, Phone, PhoneOff, Video, VideoOff } from 'lucide-react';
-import { Btn } from '@/Layouts/AppLayout';
+import { useEffect, useState } from 'react';
+import { Phone, Video } from 'lucide-react';
+import { startCall, useCall } from '@/lib/callManager';
 
 /**
- * 1-on-1 and group (mesh) calls. Each user's PeerJS id is "studyhub-user-{id}".
- * `targets` = user ids to ring when "Start call" is pressed (everyone online in the circle, or the one DM peer).
- * Mesh works well up to ~6 people; use an SFU (LiveKit etc.) beyond that.
+ * The "Voice call / Video call" buttons used on the group page and in private chat.
+ *   targets = user ids who could be called   people = [{ id, name, avatar_url }] to show their names
+ * Only people who are online right now are rung. The call itself appears in <CallOverlay /> (see AppLayout).
  */
-export default function CallPanel({ meId, targets }) {
-  const peerRef = useRef(null), localRef = useRef(null), streamRef = useRef(null);
-  const [remotes, setRemotes] = useState({});          // peerId -> MediaStream
-  const [inCall, setInCall] = useState(false);
-  const [muted, setMuted] = useState(false), [camOff, setCamOff] = useState(false);
-  const calls = useRef({});
+export default function CallPanel({ targets = [], people = [] }) {
+  const c = useCall();
+  const [, tick] = useState(0);
+  useEffect(() => { const f = () => tick((n) => n + 1); window.addEventListener('presence', f); return () => window.removeEventListener('presence', f); }, []);
 
-  const media = async (video = true) => {
-    if (!streamRef.current) {
-      streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true, video });
-      if (localRef.current) localRef.current.srcObject = streamRef.current;
-    }
-    return streamRef.current;
-  };
-  const attach = (call) => {
-    calls.current[call.peer] = call;
-    call.on('stream', (s) => setRemotes((r) => ({ ...r, [call.peer]: s })));
-    call.on('close', () => setRemotes((r) => { const { [call.peer]: _, ...rest } = r; return rest; }));
-  };
-
-  useEffect(() => {
-    const peer = new Peer(`studyhub-user-${meId}`);   // add { host, port, config:{iceServers:[TURN]} } for production
-    peerRef.current = peer;
-    peer.on('call', async (call) => {
-      if (!window.confirm('Incoming study call. Answer?')) return call.close();
-      call.answer(await media()); attach(call); setInCall(true);
-    });
-    return () => { end(); peer.destroy(); };
-  }, [meId]);
-
-  const start = async () => {
-    const stream = await media(); setInCall(true);
-    targets.forEach((id) => attach(peerRef.current.call(`studyhub-user-${id}`, stream)));
-  };
-  function end() {
-    Object.values(calls.current).forEach((c) => c.close()); calls.current = {};
-    streamRef.current?.getTracks().forEach((t) => t.stop()); streamRef.current = null;
-    setRemotes({}); setInCall(false);
-  }
-  const toggle = (kind, state, set) => { streamRef.current?.getTracks().filter((t) => t.kind === kind).forEach((t) => (t.enabled = state)); set(!state); };
+  const online = targets.filter((id) => window.__online?.has(id)).map((id) => people.find((p) => p.id === id) ?? { id, name: 'Member' });
+  const off = c.status !== 'idle' || !online.length || !c.ready;
+  const why = c.status !== 'idle' ? 'You are already in a call' : !online.length ? 'Nobody to call: no one else is online' : !c.ready ? 'Connecting…' : '';
 
   return (
     <div className="rounded-xl bg-slate-900 p-3 text-white">
-      {!inCall ? (
-        <Btn variant="accent" onClick={start} disabled={!targets.length}><Phone className="mr-1 inline" size={16} /> Start call</Btn>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-            <video ref={localRef} autoPlay muted playsInline className="aspect-video rounded-lg bg-black" />
-            {Object.entries(remotes).map(([id, s]) => <video key={id} autoPlay playsInline className="aspect-video rounded-lg bg-black" ref={(el) => el && (el.srcObject = s)} />)}
-          </div>
-          <div className="mt-2 flex gap-2">
-            <Btn variant="ghost" className="text-white" onClick={() => toggle('audio', muted, setMuted)}>{muted ? <MicOff size={16} /> : <Mic size={16} />}</Btn>
-            <Btn variant="ghost" className="text-white" onClick={() => toggle('video', camOff, setCamOff)}>{camOff ? <VideoOff size={16} /> : <Video size={16} />}</Btn>
-            <Btn variant="accent" onClick={end}><PhoneOff size={16} /></Btn>
-          </div>
-        </>
-      )}
+      <div className="flex gap-2">
+        <button disabled={off} title={why || 'Voice call'} onClick={() => startCall(online, { video: false })}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-slate-700 px-3 py-2 text-sm font-semibold hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-40">
+          <Phone size={16} /> Voice call
+        </button>
+        <button disabled={off} title={why || 'Video call'} onClick={() => startCall(online, { video: true })}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-raspberry-600 px-3 py-2 text-sm font-semibold hover:bg-raspberry-500 disabled:cursor-not-allowed disabled:opacity-40">
+          <Video size={16} /> Video call
+        </button>
+      </div>
+      <p className="mt-2 text-xs text-slate-300">{online.length ? `${online.length} online and can be called` : 'No one else is online right now'}</p>
     </div>
   );
 }

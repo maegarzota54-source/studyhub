@@ -1,5 +1,7 @@
+import { useEffect, useRef, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { Btn, inputCls } from '@/Layouts/AppLayout';
+import resizeImage from '@/utils/resizeImage';
 
 export default function ProfileDetailsForm({ status }) {
     const user = usePage().props.auth.user;
@@ -17,15 +19,33 @@ export default function ProfileDetailsForm({ status }) {
         },
     });
 
+    // Preview of the newly picked photo (created once, cleaned up when it changes).
+    const [preview, setPreview] = useState(null);
+    const fileInput = useRef(null);
+    useEffect(() => {
+        if (!form.data.avatar) { setPreview(null); return; }
+        const url = URL.createObjectURL(form.data.avatar);
+        setPreview(url);
+        return () => URL.revokeObjectURL(url);
+    }, [form.data.avatar]);
+
+    const pickPhoto = async (e) => {
+        const file = e.target.files[0];
+        form.setData('avatar', file ? await resizeImage(file) : null);
+    };
+
     const setPref = (key) => (e) =>
         form.setData('study_preferences', { ...form.data.study_preferences, [key]: e.target.value });
 
     const submit = (e) => {
         e.preventDefault();
         // Files can't be sent with a real PATCH, so send a POST and spoof the method.
-        form.transform((data) => ({ ...data, _method: 'patch' })).post(route('profile.update'), {
+        // transform() only registers the callback (it returns nothing), so it is called on its own line.
+        form.transform((data) => ({ ...data, _method: 'patch' }));
+        form.post(route('profile.update'), {
             forceFormData: true,
             preserveScroll: true,
+            onSuccess: () => { form.setData('avatar', null); if (fileInput.current) fileInput.current.value = ''; },
         });
     };
 
@@ -35,13 +55,14 @@ export default function ProfileDetailsForm({ status }) {
         <form onSubmit={submit} className="space-y-4">
             <div className="flex items-center gap-4">
                 <img
-                    src={form.data.avatar ? URL.createObjectURL(form.data.avatar) : user.avatar_url}
+                    src={preview ?? user.avatar_url}
                     alt="" className="h-16 w-16 rounded-full object-cover"
                 />
                 <div>
                     <label className="mb-1 block text-sm font-medium" htmlFor="avatar">Profile photo</label>
-                    <input id="avatar" type="file" accept="image/*" className="text-sm"
-                        onChange={(e) => form.setData('avatar', e.target.files[0] ?? null)} />
+                    <input id="avatar" ref={fileInput} type="file" accept="image/*" className="text-sm"
+                        onChange={pickPhoto} />
+                    <p className="mt-1 text-xs text-gray-500">JPG, PNG or WebP. It is resized automatically.</p>
                     {err('avatar')}
                 </div>
             </div>

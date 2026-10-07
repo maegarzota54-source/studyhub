@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
 import ChatPanel from '@/Components/ChatPanel';
 import CallPanel from '@/Components/CallPanel';
@@ -33,7 +33,7 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
       {tab === 'chat' && (
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2"><ChatPanel threaded messages={messages} channel={`group.${group.id}`} postUrl={route('messages.group', group.id)} /></div>
-          <div className="space-y-3"><CallPanel meId={me.id} targets={onlineOthers} /><p className="text-xs text-gray-500">{onlineOthers.length} other member(s) online</p></div>
+          <div className="space-y-3"><CallPanel targets={members.filter((m) => m.id !== me.id).map((m) => m.id)} people={members} /><p className="text-xs text-gray-500">{onlineOthers.length} other member(s) online</p></div>
         </div>
       )}
 
@@ -55,7 +55,7 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
       )}
 
       {tab === 'tasks' && <div className="space-y-2">{tasks.length === 0 && <p className="text-sm text-gray-500">No tasks yet. Add one from the Tasks page.</p>}
-        {tasks.map((t) => <Card key={t.id}><b>{t.title}</b> <span className="text-xs text-gray-500">{t.assignee?.name} · {t.status} · due {t.due_date ?? '—'}</span></Card>)}</div>}
+        {tasks.map((t) => <Card key={t.id}><Link href={route('tasks.show', t.id)} className="block"><b className={`hover:text-hunter-700 ${t.status === 'completed' ? 'text-gray-400 line-through' : ''}`}>{t.title}</b> <span className="text-xs text-gray-500">{t.assignees.length ? t.assignees.map((a) => a.name).join(', ') : 'Unassigned'} · {t.status} · due {t.due_date ?? '—'} · {t.comments_count} comment(s)</span></Link></Card>)}</div>}
 
       {tab === 'schedule' && <div className="space-y-2">{events.length === 0 && <p className="text-sm text-gray-500">No sessions visible to you.</p>}
         {events.map((e) => <Card key={e.id}><b>{e.title}</b> <span className="text-xs text-gray-500">{new Date(e.starts_at).toLocaleString()} · {e.visibility}</span></Card>)}</div>}

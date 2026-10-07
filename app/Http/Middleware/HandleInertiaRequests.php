@@ -35,6 +35,11 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => ['user' => $request->user()],
             'unread' => fn () => $request->user()?->unreadNotifications()->count() ?? 0,
+            // Phase 1: the latest few notifications, shown in the bell dropdown in the header.
+            'recent_notifications' => fn () => $request->user()?->notifications()->limit(6)->get()->map(fn ($n) => [
+                'id' => $n->id, 'message' => $n->data['message'] ?? '', 'url' => $n->data['url'] ?? null,
+                'read' => (bool) $n->read_at, 'ago' => $n->created_at->diffForHumans(),
+            ])->values() ?? [],
             'flash' => ['success' => fn () => $request->session()->get('success')],
         ];
     }

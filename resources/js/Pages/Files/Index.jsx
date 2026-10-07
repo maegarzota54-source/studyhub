@@ -33,7 +33,7 @@ export default function Files({ items, groups, filters }) {
         {items.map((i) => (
           <div key={i.id} className="flex items-center gap-3 px-5 py-3">
             <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{i.title}</p>
-              <p className="text-xs text-gray-500">{i.kind} · {i.group?.title ?? 'Personal'} · {i.user.name} {size(i.size)}</p></div>
+              <p className="text-xs text-gray-500">{i.kind} · {i.group?.title ?? 'Personal'} · {i.user.name} {size(i.size)}{i.message_id && <span className="ml-2 rounded bg-hunter-100 px-1.5 text-hunter-800">from chat</span>}</p></div>
             {i.path && <a className="text-sm text-hunter-700 underline" href={route('files.download', i.id)}>Download</a>}
             <button className="text-sm text-raspberry-600" onClick={() => confirm('Delete?') && router.delete(route('files.destroy', i.id))}>Delete</button>
           </div>

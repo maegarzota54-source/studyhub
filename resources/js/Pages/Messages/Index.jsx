@@ -17,13 +17,14 @@ export default function Messages({ contacts, peer, messages, auth }) {
           {contacts.map((c) => (
             <Link key={c.id} href={route('messages.index', { user_id: c.id })}
               className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm ${peer?.id === c.id ? 'bg-hunter-50' : 'hover:bg-cool-100'}`}>
-              <img src={c.avatar_url} className="h-7 w-7 rounded-full" alt="" /> <span className="flex-1">{c.name}</span> <OnlineDot userId={c.id} />
+              <img src={c.avatar_url} className="h-7 w-7 rounded-full" alt="" /> <span className="min-w-0 flex-1"><span className="block truncate">{c.name}</span>
+                {c.last_message && <span className="block truncate text-xs text-gray-500">{c.last_message}</span>}</span> <OnlineDot userId={c.id} />
             </Link>
           ))}
         </Card>
         <div className="space-y-3 lg:col-span-3">
           {peer ? (<>
-            <CallPanel meId={me} targets={[peer.id]} />
+            <CallPanel targets={[peer.id]} people={[peer]} />
             <ChatPanel messages={messages} channel={channel} postUrl={route('messages.direct', peer.id)} />
           </>) : <p className="text-sm text-gray-500">Pick someone to start a conversation.</p>}
         </div>

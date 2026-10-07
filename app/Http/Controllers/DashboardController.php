@@ -13,7 +13,7 @@ class DashboardController extends Controller
             'stats' => [
                 'groups' => $u->groups()->count(),
                 'upcoming' => Schedule::visibleTo($u)->where('starts_at', '>=', now())->count(),
-                'tasks_due' => Task::visibleTo($u)->where('status', 'pending')->where('assignee_id', $u->id)->count(),
+                'tasks_due' => Task::where('status', 'pending')->whereHas('assignees', fn ($a) => $a->where('users.id', $u->id))->count(),
                 'hours_week' => round(StudySession::where('user_id', $u->id)->where('studied_on', '>=', now()->startOfWeek())->sum('minutes') / 60, 1),
             ],
             'sessions' => Schedule::visibleTo($u)->with('group:id,title')->where('starts_at', '>=', now())->orderBy('starts_at')->limit(5)->get(),

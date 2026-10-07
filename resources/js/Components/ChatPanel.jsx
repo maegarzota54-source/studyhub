@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { router, useForm, usePage } from '@inertiajs/react';
-import { Download, Flag, Paperclip, Reply, Save } from 'lucide-react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
+import { CalendarDays, Download, Flag, FolderCheck, ListChecks, Paperclip, Reply, Save } from 'lucide-react';
 import { Btn, inputCls } from '@/Layouts/AppLayout';
 
 const KINDS = { message: 'Message', comment: 'Comment', answer: 'Answer', suggestion: 'Suggestion' };
@@ -20,7 +20,9 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
 
   const send = (e) => {
     e.preventDefault();
-    form.transform((d) => ({ ...d, parent_id: replyTo?.id ?? null })).post(postUrl, {
+    // transform() only registers the callback (it returns nothing), so it must be called on its own line.
+    form.transform((d) => ({ ...d, parent_id: replyTo?.id ?? null }));
+    form.post(postUrl, {
       forceFormData: true, preserveScroll: true, onSuccess: () => { form.reset(); setReplyTo(null); },
     });
   };
@@ -33,6 +35,13 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
           {m.kind !== 'message' && <span className="ml-2 rounded bg-raspberry-500/10 px-1.5 text-raspberry-600">{KINDS[m.kind]}</span>}
           <span className="ml-2">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></p>
         {m.body && <p className="whitespace-pre-wrap break-words text-sm">{m.body}</p>}
+        {m.task && (
+          <Link href={route('tasks.show', m.task.id)} className="mt-1 flex max-w-sm items-center gap-2 rounded-lg border border-hunter-700/30 bg-hunter-50 px-3 py-2 text-sm hover:border-hunter-700">
+            <ListChecks size={16} className="text-hunter-700" />
+            <span className="min-w-0 flex-1"><b className={`block truncate ${m.task.status === 'completed' ? 'line-through' : ''}`}>{m.task.title}</b>
+              <span className="flex items-center gap-1 text-xs text-gray-500"><CalendarDays size={11} />{m.task.due_date ?? 'No due date'} · Open task</span></span>
+          </Link>
+        )}
         {m.attachment_name && (
           <a href={route('messages.attachment', m.id)} className="mt-1 inline-flex items-center gap-1 rounded border border-gray-200 px-2 py-1 text-xs">
             <Download size={12} /> {m.attachment_name}
@@ -40,7 +49,9 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
         )}
         <div className="mt-1 flex gap-3 text-xs text-gray-500">
           {threaded && !nested && <button onClick={() => setReplyTo(m)} className="hover:text-hunter-700"><Reply size={12} className="inline" /> Reply</button>}
-          {m.attachment_name && <button onClick={() => router.post(route('messages.save', m.id), {}, { preserveScroll: true })} className="hover:text-hunter-700"><Save size={12} className="inline" /> Save to Notes & Files</button>}
+          {m.attachment_name && (m.saved
+            ? <Link href={route('files.index')} className="text-hunter-700 hover:underline"><FolderCheck size={12} className="inline" /> Saved in Notes & Files</Link>
+            : <button onClick={() => router.post(route('messages.save', m.id), {}, { preserveScroll: true })} className="hover:text-hunter-700"><Save size={12} className="inline" /> Save to Notes & Files</button>)}
           {m.sender_id !== me.id && <button onClick={() => router.post(route('messages.flag', m.id), {}, { preserveScroll: true })} className="hover:text-raspberry-600"><Flag size={12} className="inline" /> Report</button>}
         </div>
         {m.replies?.map((r) => <Bubble key={r.id} m={r} nested />)}
@@ -70,7 +81,7 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
           <Btn disabled={form.processing}>Send</Btn>
         </div>
         {form.data.attachment && <p className="mt-1 text-xs text-gray-500">{form.data.attachment.name}</p>}
-        {form.errors.body && <p className="mt-1 text-xs text-raspberry-600">{form.errors.body}</p>}
+        {Object.values(form.errors).map((m) => <p key={m} className="mt-1 text-xs text-raspberry-600">{m}</p>)}
       </form>
     </div>
   );

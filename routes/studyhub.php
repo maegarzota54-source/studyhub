@@ -1,7 +1,7 @@
 <?php
 // Add to the bottom of routes/web.php:  require __DIR__.'/studyhub.php';
 // (and remove Breeze's default '/dashboard' route to avoid a duplicate name)
-use App\Http\Controllers\{DashboardController, GroupController, MessageController, NoteFileController,
+use App\Http\Controllers\{DashboardController, GroupController, MemberController, MessageController, NoteFileController,
     ScheduleController, TaskController, ProgressController, NotificationController};
 use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +17,9 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
     Route::post('/groups/{group}/join', [GroupController::class, 'join'])->name('groups.join');
     Route::delete('/groups/{group}/leave', [GroupController::class, 'leave'])->name('groups.leave');
+
+    Route::get('/members', [MemberController::class, 'index'])->name('members.index');
+    Route::post('/presence', [MemberController::class, 'ping'])->name('presence.ping');
 
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::post('/messages/direct/{user}', [MessageController::class, 'storeDirect'])->name('messages.direct');
@@ -36,6 +39,9 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
 
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
+    Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
+    Route::post('/tasks/{task}/share', [TaskController::class, 'share'])->name('tasks.share');
+    Route::delete('/tasks/{task}/comments/{comment}', [TaskController::class, 'destroyComment'])->name('tasks.comment.destroy');
     Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::post('/tasks/{task}/comments', [TaskController::class, 'comment'])->name('tasks.comment');

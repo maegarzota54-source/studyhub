@@ -18,8 +18,14 @@ class User extends Authenticatable
     public function isAdmin(): bool { return $this->role === 'admin'; }
     public function groups() { return $this->belongsToMany(StudyGroup::class, 'group_members')->withPivot('role')->withTimestamps(); }
     public function studySessions() { return $this->hasMany(StudySession::class); }
+    /**
+     * Phase 1: avatars are served by the app itself (route profile.avatar), so nobody has to run
+     * `php artisan storage:link`. The ?v= part changes whenever a new photo is uploaded, which busts the browser cache.
+     */
     public function getAvatarUrlAttribute(): string {
-        return $this->avatar ? asset('storage/'.$this->avatar)
-            : 'https://ui-avatars.com/api/?background=355E3B&color=fff&name='.urlencode($this->name);
+        if ($this->avatar && $this->id) {
+            return route('profile.avatar', $this->id, false).'?v='.substr(md5($this->avatar), 0, 8);
+        }
+        return 'https://ui-avatars.com/api/?background=355E3B&color=fff&name='.urlencode($this->name ?? 'User');
     }
 }

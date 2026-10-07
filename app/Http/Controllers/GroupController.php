@@ -43,8 +43,8 @@ class GroupController extends Controller
         $u = $request->user();
         abort_unless($group->hasMember($u) || $u->isAdmin(), 403, 'Join this circle to see its workspace.');
 
-        $messages = $group->messages()->whereNull('parent_id')->with('sender:id,name,avatar')
-            ->with(['replies' => fn ($q) => $q->with('sender:id,name,avatar')]) // see Message::replies below
+        $messages = $group->messages()->whereNull('parent_id')->with(['sender:id,name,avatar', 'task'])
+            ->with(['replies' => fn ($q) => $q->with('sender:id,name,avatar')->withExists('savedFiles as saved')])->withExists('savedFiles as saved') // see Message::replies below
             ->latest()->limit(100)->get()->reverse()->values();
 
         return Inertia::render('Groups/Show', [
@@ -54,7 +54,7 @@ class GroupController extends Controller
                 ->each->append('avatar_url'),
             'messages' => $messages,
             'modules' => $group->files()->where('kind', 'module')->with('user:id,name')->latest()->get(),
-            'tasks' => Task::where('study_group_id', $group->id)->with(['assignee:id,name', 'comments'])->latest()->get(),
+            'tasks' => Task::where('study_group_id', $group->id)->with('assignees')->withCount('comments')->latest()->get(),
             'events' => Schedule::visibleTo($u)->where('study_group_id', $group->id)->orderBy('starts_at')->get(),
         ]);
     }
