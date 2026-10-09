@@ -112,13 +112,13 @@ export default function Welcome({ canLogin, canRegister }) {
 
     return (
         <div className="min-h-screen bg-[#F3F4F6] text-[#1F2937]">
-            <Head title="StudyHub: Group Circle System" />
+            <Head title="StudyHub-Group Circle System" />
             <ShStyle />
 
             <header className="sticky top-0 z-30 border-b border-gray-200/70 bg-[#F3F4F6]/85 backdrop-blur">
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
                     <Link href="/" className="sh-display flex items-center gap-2 text-lg font-extrabold text-[#355E3B]">
-                        <img src="/images/studyhub-logo.png" alt="" className="h-10 w-10 rounded-full bg-white" /> StudyHub
+                        <img src="/images/studyhub-logo.png" alt="" className="h-10 w-10 rounded-full bg-white" /> StudyHub-Group Circle System
                     </Link>
                     <nav className="flex items-center gap-2">
                         {auth?.user ? <Link href={route('dashboard')} className="sh-btn sh-btn-primary !py-2">Open dashboard</Link> : (<>

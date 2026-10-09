@@ -3,7 +3,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
 
 function CreateGroup() {
-  const f = useForm({ title: '', topic: '', description: '', target_date: '', skill_level: 'intermediate', mode: 'online', max_members: 10 });
+  const f = useForm({ title: '', Topic: '', Description: '', Target_date: '', Skill_level: 'Intermediate', mode: 'Online', max_members: 10 });
   const set = (k) => (e) => f.setData(k, e.target.value);
   return (
     <Card>
@@ -12,7 +12,7 @@ function CreateGroup() {
         <input className={inputCls} placeholder="Group title" value={f.data.title} onChange={set('title')} />
         <input className={inputCls} placeholder="Topic of study" value={f.data.topic} onChange={set('topic')} />
         <input type="date" className={inputCls} value={f.data.target_date} onChange={set('target_date')} aria-label="Target date" />
-        <select className={inputCls} value={f.data.skill_level} onChange={set('skill_level')}>{['beginner', 'intermediate', 'advanced'].map((s) => <option key={s}>{s}</option>)}</select>
+        <select className={inputCls} value={f.data.skill_level} onChange={set('skill_level')}>{['Beginner', 'Intermediate', 'Advanced'].map((s) => <option key={s}>{s}</option>)}</select>
         <textarea className={`${inputCls} md:col-span-2`} placeholder="Description" value={f.data.description} onChange={set('description')} />
         {Object.values(f.errors).map((e) => <p key={e} className="text-xs text-raspberry-600 md:col-span-2">{e}</p>)}
         <Btn disabled={f.processing}>Create circle</Btn>

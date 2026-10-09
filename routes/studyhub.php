@@ -53,10 +53,26 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::post('/notifications/read', [NotificationController::class, 'readAll'])->name('notifications.read');
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/', [AdminController::class, 'index'])->name('index');
-        Route::patch('/users/{user}/suspend', [AdminController::class, 'toggleSuspend'])->name('users.suspend');
-        Route::delete('/groups/{group}', [AdminController::class, 'destroyGroup'])->name('groups.destroy');
-        Route::post('/messages/{message}/clear', [AdminController::class, 'clearFlag'])->name('messages.clear');
-        Route::delete('/messages/{message}', [AdminController::class, 'destroyMessage'])->name('messages.destroy');
-    });
+    Route::get('/', [AdminController::class, 'index'])->name('index');
+    Route::get('/search', [AdminController::class, 'search'])->name('search');
+
+    Route::get('/users', [AdminController::class, 'users'])->name('users');
+    Route::patch('/users/{user}/suspend', [AdminController::class, 'toggleSuspend'])->name('users.suspend');
+    Route::patch('/users/{user}/role', [AdminController::class, 'setRole'])->name('users.role');
+    Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+
+    Route::get('/groups', [AdminController::class, 'groups'])->name('groups');
+    Route::delete('/groups/{group}', [AdminController::class, 'destroyGroup'])->name('groups.destroy');
+
+    Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+    Route::post('/messages/{message}/clear', [AdminController::class, 'clearFlag'])->name('messages.clear');
+    Route::delete('/messages/{message}', [AdminController::class, 'destroyMessage'])->name('messages.destroy');
+
+    Route::get('/content', [AdminController::class, 'content'])->name('content');
+    Route::get('/content/{file}/download', [AdminController::class, 'downloadFile'])->name('content.download');
+    Route::delete('/content/{file}', [AdminController::class, 'destroyFile'])->name('content.destroy');
+
+    Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+    Route::post('/settings', [AdminController::class, 'saveSettings'])->name('settings.save');
+});
 });

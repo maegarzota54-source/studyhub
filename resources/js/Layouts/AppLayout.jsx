@@ -15,7 +15,7 @@ const NAV = [
 const NAV_POSITION = 'side';
 
 export default function AppLayout({ title, children }) {
-  const { auth, unread, flash, recent_notifications: recent = [] } = usePage().props;
+  const { auth, unread, flash, announcement } = usePage().props;
   const [panel, setPanel] = useState(null);  // which header dropdown is open: 'bell' | 'profile' | null
   const [open, setOpen] = useState(false);   // phone menu (hamburger)
 
@@ -130,6 +130,8 @@ export default function AppLayout({ title, children }) {
     <div className="border-b border-gray-200 bg-white px-4 py-3 md:px-6"><h1 className="truncate text-lg font-semibold md:text-xl">{title}</h1></div>
   );
   const flashBar = flash?.success && <div className="bg-hunter-100 px-4 py-2 text-sm text-hunter-800 md:px-6">{flash.success}</div>;
+  {announcement && <div role="status" className="bg-[#E30B5C] px-6 py-2 text-sm text-white">{announcement}</div>}
+
 
   if (isTop) {
     return (

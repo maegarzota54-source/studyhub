@@ -32,7 +32,7 @@ class GroupController extends Controller
             'title' => 'required|string|max:120', 'topic' => 'required|string|max:120',
             'description' => 'nullable|string|max:2000', 'target_date' => 'nullable|date|after_or_equal:today',
             'skill_level' => 'required|in:beginner,intermediate,advanced', 'mode' => 'required|in:online,in-person',
-            'max_members' => 'required|integer|min:2|max:50',
+            'max_members' => 'required|integer|min:2|max:'.\App\Models\Setting::get('max_group_size', 50),
         ]);
         $group = StudyGroup::create($data + ['owner_id' => $request->user()->id]);
         $group->members()->attach($request->user()->id, ['role' => 'admin']);

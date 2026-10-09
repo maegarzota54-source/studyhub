@@ -8,6 +8,8 @@ class Message extends Model
     protected $guarded = ['id'];
     protected function casts(): array { return ['is_flagged' => 'boolean']; }
     public function sender() { return $this->belongsTo(User::class, 'sender_id'); }
+    public function recipient() { return $this->belongsTo(User::class, 'recipient_id'); }
+
     public function parent() { return $this->belongsTo(self::class, 'parent_id'); }
     public function replies() { return $this->hasMany(self::class, 'parent_id')->oldest(); }
     /** Notes & Files copies auto-saved from this message's attachment. */
