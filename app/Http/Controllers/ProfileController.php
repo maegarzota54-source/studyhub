@@ -37,7 +37,7 @@ class ProfileController extends Controller
         $u->fill($d);
         if ($u->isDirty('email')) $u->email_verified_at = null;
         $u->save();
-        return to_route('profile.edit')->with('status', 'profile-updated');
+        return back()->with('status', 'profile-updated');
     }
 
     public function destroy(Request $request): RedirectResponse {

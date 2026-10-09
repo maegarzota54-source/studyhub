@@ -147,7 +147,7 @@ export default function Welcome({ canLogin, canRegister }) {
                 <div className="relative mx-auto w-full max-w-lg">
                 <div className="absolute inset-6 rounded-full bg-[#d6e5d9]/70 blur-2xl" aria-hidden="true" />
                     <img
-                    src="/images/study-group.jpg"
+                    src="/images/study-group.png"
                     alt="Four students studying together around open books"
                     draggable="false"
                     className="relative w-full select-none"

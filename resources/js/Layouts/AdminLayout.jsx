@@ -147,7 +147,7 @@ export default function AdminLayout({ title, crumbs = [], actions, children }) {
                     {menu && (
                         <div role="menu" className="absolute right-0 top-11 w-52 rounded-xl border border-gray-200 bg-white py-1 shadow-xl">
                             
-                            <Link href={route('profile.edit')} className="block px-4 py-2 text-sm hover:bg-gray-100">Profile settings</Link>
+                            <Link href={route('profile.edit', { view: 'admin' })} className="block px-4 py-2 text-sm hover:bg-gray-100">Profile settings</Link>
                             <button onClick={() => router.post(route('logout'))} className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-100"><LogOut size={14} /> Log out</button>
                         </div>
                     )}
