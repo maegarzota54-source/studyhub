@@ -27,7 +27,9 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
     });
   };
 
-  const Bubble = ({ m, nested }) => (
+  const Bubble = ({ m, nested }) => m.kind === 'call' ? (
+    <p className="text-center text-xs text-gray-500"><b className="text-slate-700">{m.sender.name}</b> · {m.body} · {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+  ) : (
     <div className={`${nested ? 'ml-8 mt-2' : ''} flex gap-2`}>
       <img src={m.sender.avatar_url ?? `https://ui-avatars.com/api/?background=355E3B&color=fff&name=${m.sender.name}`} className="h-8 w-8 rounded-full" alt="" />
       <div className="min-w-0 flex-1">

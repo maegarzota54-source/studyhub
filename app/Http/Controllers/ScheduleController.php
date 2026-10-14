@@ -13,10 +13,10 @@ class ScheduleController extends Controller
         $month = \Carbon\Carbon::parse($request->month ?? now())->startOfMonth();
         return Inertia::render('Schedule/Index', [
             'month' => $month->format('Y-m'),
-            'events' => Schedule::visibleTo($u)->with(['group:id,title', 'attendees:id,name'])
+            'events' => Schedule::visibleTo($u)->with(['group:id,title', 'attendees:id,name,avatar', 'user:id,name,avatar'])
                 ->whereBetween('starts_at', [$month->copy()->startOfWeek(), $month->copy()->endOfMonth()->endOfWeek()])
                 ->orderBy('starts_at')->get(),
-            'groups' => $u->groups()->with('members:id,name')->get(['study_groups.id', 'title']),
+            'groups' => $u->groups()->with('members:id,name,avatar')->get(['study_groups.id', 'title']),
         ]);
     }
 

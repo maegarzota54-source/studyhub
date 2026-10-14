@@ -24,7 +24,7 @@ export default function Messages({ contacts, peer, messages, auth }) {
         </Card>
         <div className="space-y-3 lg:col-span-3">
           {peer ? (<>
-            <CallPanel targets={[peer.id]} people={[peer]} />
+            <CallPanel targets={[peer.id]} people={[peer]} log={{ user_id: peer.id }} />
             <ChatPanel messages={messages} channel={channel} postUrl={route('messages.direct', peer.id)} />
           </>) : <p className="text-sm text-gray-500">Pick someone to start a conversation.</p>}
         </div>

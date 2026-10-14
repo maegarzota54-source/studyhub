@@ -28,6 +28,12 @@ class GroupController extends Controller
     }
 
     public function store(Request $request) {
+        $mode = strtolower(str_replace([' ', '_'], '-', trim((string) $request->mode)));
+        $level = strtolower(trim((string) $request->skill_level));
+        $request->merge([
+        'skill_level' => in_array($level, ['beginner', 'intermediate', 'advanced']) ? $level : 'beginner',
+        'mode' => in_array($mode, ['online', 'in-person']) ? $mode : 'online',
+        ]);
         $data = $request->validate([
             'title' => 'required|string|max:120', 'topic' => 'required|string|max:120',
             'description' => 'nullable|string|max:2000', 'target_date' => 'nullable|date|after_or_equal:today',
@@ -55,7 +61,7 @@ class GroupController extends Controller
             'messages' => $messages,
             'modules' => $group->files()->where('kind', 'module')->with('user:id,name')->latest()->get(),
             'tasks' => Task::where('study_group_id', $group->id)->with('assignees')->withCount('comments')->latest()->get(),
-            'events' => Schedule::visibleTo($u)->where('study_group_id', $group->id)->orderBy('starts_at')->get(),
+            'events' => Schedule::visibleTo($u)->where('study_group_id', $group->id)->with(['user:id,name,avatar', 'attendees:id,name,avatar'])->orderBy('starts_at')->get(),
         ]);
     }
 

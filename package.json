@@ -25,7 +25,10 @@
         "@laravel/multiplex": "^0.4.1"
     },
     "dependencies": {
+        "docx-preview": "^0.4.1",
         "lucide-react": "^1.52.0",
+        "pptx-preview": "^1.0.7",
+        "read-excel-file": "^9.3.12",
         "peerjs": "^1.5.5",
         "pusher-js": "^8.6.0",
         "recharts": "^3.10.1"
