@@ -9,13 +9,11 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/groups/find', [GroupController::class, 'find'])->name('groups.find');
-    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
-    Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
+    
     Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
     Route::patch('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
     Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
-    Route::post('/groups/{group}/join', [GroupController::class, 'join'])->name('groups.join');
+    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
     Route::delete('/groups/{group}/leave', [GroupController::class, 'leave'])->name('groups.leave');
 
     Route::get('/members', [MemberController::class, 'index'])->name('members.index');

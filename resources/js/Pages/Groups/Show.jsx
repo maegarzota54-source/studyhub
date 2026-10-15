@@ -4,6 +4,7 @@ import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
 import ChatPanel from '@/Components/ChatPanel';
 import CallPanel from '@/Components/CallPanel';
 import OnlineDot from '@/Components/OnlineDot';
+import SharedReader from '@/Components/SharedReader';
 
 export default function GroupShow({ group, isGroupAdmin, members, messages, modules, tasks, events, auth }) {
   const [tab, setTab] = useState('chat');
@@ -33,6 +34,7 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
       {tab === 'chat' && (
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2"><ChatPanel threaded messages={messages} channel={`group.${group.id}`} postUrl={route('messages.group', group.id)} /></div>
+          <SharedReader groupId={group.id} />
           <div className="space-y-3"><CallPanel targets={members.filter((m) => m.id !== me.id).map((m) => m.id)} people={members} /><p className="text-xs text-gray-500">{onlineOthers.length} other member(s) online</p></div>
         </div>
       )}
