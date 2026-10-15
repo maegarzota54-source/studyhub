@@ -20,6 +20,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::post('/presence', [MemberController::class, 'ping'])->name('presence.ping');
 
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::post('/messages/call-log', [MessageController::class, 'callLog'])->name('messages.call');
     Route::post('/messages/direct/{user}', [MessageController::class, 'storeDirect'])->name('messages.direct');
     Route::post('/groups/{group}/messages', [MessageController::class, 'storeGroup'])->name('messages.group');
     Route::post('/messages/{message}/save', [MessageController::class, 'saveToFiles'])->name('messages.save');
@@ -28,6 +29,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
 
     Route::get('/files', [NoteFileController::class, 'index'])->name('files.index');
     Route::post('/files', [NoteFileController::class, 'store'])->name('files.store');
+    Route::get('/files/{file}/preview', [NoteFileController::class, 'preview'])->name('files.preview');
     Route::get('/files/{file}/download', [NoteFileController::class, 'download'])->name('files.download');
     Route::delete('/files/{file}', [NoteFileController::class, 'destroy'])->name('files.destroy');
 

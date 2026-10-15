@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Mic, MicOff, Phone, PhoneOff, Video, VideoOff } from 'lucide-react';
+import { GripHorizontal, Mic, MicOff, Phone, PhoneOff, Video, VideoOff } from 'lucide-react';
 import { accept, clearError, decline, end, toggleCamera, toggleMute, useCall } from '@/lib/callManager';
 
 /** One person's picture or video. Voice-only people show their photo; video people show their camera. */
@@ -29,6 +29,17 @@ export default function CallOverlay() {
   const c = useCall();
   const [now, setNow] = useState(Date.now());
   useEffect(() => { if (c.status !== 'active') return; const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, [c.status]);
+  // The call window can be dragged anywhere (mouse or finger); it returns to the corner on the next call.
+  const [pos, setPos] = useState(null);
+  const box = useRef(null), drag = useRef(null);
+  useEffect(() => { if (c.status === 'idle') setPos(null); }, [c.status]);
+  const down = (e) => { if (e.target.closest('button') || !box.current) return; const r = box.current.getBoundingClientRect(); drag.current = { dx: e.clientX - r.left, dy: e.clientY - r.top }; e.currentTarget.setPointerCapture(e.pointerId); };
+  const move = (e) => {
+    if (!drag.current || !box.current) return;
+    const r = box.current.getBoundingClientRect();
+    setPos({ x: Math.min(Math.max(0, e.clientX - drag.current.dx), Math.max(0, window.innerWidth - r.width)), y: Math.min(Math.max(0, e.clientY - drag.current.dy), Math.max(0, window.innerHeight - r.height)) });
+  };
+  const up = () => { drag.current = null; };
   useEffect(() => { if (!c.error) return; const t = setTimeout(clearError, 7000); return () => clearTimeout(t); }, [c.error]);
 
   return (
@@ -54,8 +65,10 @@ export default function CallOverlay() {
       )}
 
       {(c.status === 'calling' || c.status === 'active') && (
-        <div role="dialog" aria-label="Call" className="fixed bottom-4 right-4 z-[80] w-[min(26rem,calc(100vw-2rem))] rounded-2xl bg-slate-900 p-3 text-white shadow-2xl">
-          <div className="mb-2 flex items-center justify-between text-sm">
+        <div ref={box} role="dialog" aria-label="Call" style={pos ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
+          className="fixed bottom-4 right-4 z-[80] w-[min(26rem,calc(100vw-2rem))] rounded-2xl bg-slate-900 p-3 text-white shadow-2xl">
+          <div onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} title="Drag to move" className="mb-2 flex cursor-move touch-none select-none items-center justify-between text-sm">
+            <GripHorizontal size={16} className="mr-2 shrink-0 text-slate-400" />
             <span className="truncate font-semibold">{c.status === 'calling' ? `Calling ${c.label}…` : c.label}</span>
             <span className="ml-2 shrink-0 text-xs text-slate-300">{c.status === 'active' ? `${c.video ? 'Video' : 'Voice'} · ${fmt(now - c.startedAt)}` : 'Ringing'}</span>
           </div>
@@ -69,7 +82,7 @@ export default function CallOverlay() {
           <div className="mt-3 flex justify-center gap-3">
             <button onClick={toggleMute} aria-label={c.muted ? 'Unmute' : 'Mute'} className={`rounded-full p-3 ${c.muted ? 'bg-red-600' : 'bg-slate-700 hover:bg-slate-600'}`}>{c.muted ? <MicOff size={18} /> : <Mic size={18} />}</button>
             {c.video && <button onClick={toggleCamera} aria-label={c.camOff ? 'Turn camera on' : 'Turn camera off'} className={`rounded-full p-3 ${c.camOff ? 'bg-red-600' : 'bg-slate-700 hover:bg-slate-600'}`}>{c.camOff ? <VideoOff size={18} /> : <Video size={18} />}</button>}
-            <button onClick={() => end()} aria-label="End call" className="rounded-full bg-red-600 p-3 hover:bg-red-500"><PhoneOff size={18} /></button>
+            <button onClick={() => end(null, true)} aria-label="End call" className="rounded-full bg-red-600 p-3 hover:bg-red-500"><PhoneOff size={18} /></button>
           </div>
         </div>
       )}
