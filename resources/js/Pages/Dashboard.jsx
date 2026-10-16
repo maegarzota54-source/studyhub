@@ -121,13 +121,7 @@ export default function Dashboard({ stats, weeklyGoal, streak, chart, groups, se
                         <p className="text-sm text-white/80">{new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                         <h1 className="mt-1 text-3xl font-bold md:text-4xl">{hello}, {first}!</h1>
                         <p className="mt-2 text-white/85">{stats.tasks_due > 0 ? `You have ${stats.tasks_due} task${stats.tasks_due > 1 ? 's' : ''} waiting. Let's make today count.` : 'Your task list is clear. Great time to study with your circle.'}</p>
-                        <div className="mt-5 flex flex-wrap gap-2">
-                            {actions.map(([label, name, Icon]) => (
-                                <Link key={name} href={route(name)} className="flex items-center gap-2 rounded-full bg-white/12 px-3.5 py-2 text-sm font-medium backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white hover:text-[#355E3B]" style={{ background: 'rgba(255,255,255,.14)' }}>
-                                    <Icon size={15} aria-hidden="true" /> {label}
-                                </Link>
-                            ))}
-                        </div>
+                        
                     </div>
                     <div className="flex items-center gap-5">
                         <div className="flex flex-col items-center rounded-2xl px-5 py-4 text-center" style={{ background: 'rgba(255,255,255,.12)' }}>

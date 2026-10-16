@@ -6,7 +6,6 @@ import OnlineDot from '@/Components/OnlineDot';
 import SharedReader from '@/Components/SharedReader';
 import { ActiveBadge, GroupCover } from '@/Components/GroupBits';
 
-HEAD
 export default function Messages({ contacts = [], peer = null, messages = [], groups = [], group = null, groupMembers = [], auth }) {
     const me = auth.user.id;
     const channel = peer ? `dm.${Math.min(me, peer.id)}.${Math.max(me, peer.id)}` : null;
@@ -74,33 +73,4 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
             </div>
         </AppLayout>
     );
-
-export default function Messages({ contacts, peer, messages, auth }) {
-  const me = auth.user.id;
-  const channel = peer ? `dm.${Math.min(me, peer.id)}.${Math.max(me, peer.id)}` : null;
-  return (
-    <AppLayout title="Messages">
-      <Head title="Messages" />
-      <div className="grid gap-4 lg:grid-cols-4">
-        <Card className="lg:col-span-1">
-          <h2 className="mb-2 font-semibold">Students in your circles</h2>
-          {contacts.length === 0 && <p className="text-sm text-gray-500">Join a circle to start chatting.</p>}
-          {contacts.map((c) => (
-            <Link key={c.id} href={route('messages.index', { user_id: c.id })}
-              className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm ${peer?.id === c.id ? 'bg-hunter-50' : 'hover:bg-cool-100'}`}>
-              <img src={c.avatar_url} className="h-7 w-7 rounded-full" alt="" /> <span className="min-w-0 flex-1"><span className="block truncate">{c.name}</span>
-                {c.last_message && <span className="block truncate text-xs text-gray-500">{c.last_message}</span>}</span> <OnlineDot userId={c.id} />
-            </Link>
-          ))}
-        </Card>
-        <div className="space-y-3 lg:col-span-3">
-          {peer ? (<>
-            <CallPanel targets={[peer.id]} people={[peer]} log={{ user_id: peer.id }} />
-            <ChatPanel messages={messages} channel={channel} postUrl={route('messages.direct', peer.id)} />
-          </>) : <p className="text-sm text-gray-500">Pick someone to start a conversation.</p>}
-        </div>
-      </div>
-    </AppLayout>
-  );
->>>>>>> 5c7ed988e78ac3a459d732af7fbf19be60320d1c
 }
