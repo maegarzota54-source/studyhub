@@ -15,4 +15,10 @@ class StudyGroup extends Model
     public function isGroupAdmin(User $u): bool {
         return $u->isAdmin() || $this->members()->whereKey($u->id)->wherePivot('role', 'admin')->exists();
     }
+    protected $appends = ['cover_url'];
+
+public function getCoverUrlAttribute(): ?string
+{
+    return $this->cover ? '/storage/'.$this->cover : null;
+}
 }

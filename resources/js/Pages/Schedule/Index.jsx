@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
+import SessionCard, { sessionStatus } from '@/Components/SessionCard';
 
 export default function Schedule({ month, events, groups }) {
+  const me = usePage().props.auth.user;
+  const open = events.filter((e) => sessionStatus(e) !== 'ended');
   const [y, m] = month.split('-').map(Number);
   const first = new Date(y, m - 1, 1), start = new Date(first); start.setDate(1 - first.getDay());
   const cells = Array.from({ length: 42 }, (_, i) => { const d = new Date(start); d.setDate(start.getDate() + i); return d; });
@@ -29,9 +32,17 @@ export default function Schedule({ month, events, groups }) {
             {cells.map((d) => (
               <div key={key(d)} className={`min-h-20 bg-white p-1 ${d.getMonth() !== m - 1 ? 'opacity-40' : ''}`}>
                 <span className={key(d) === key(new Date()) ? 'rounded-full bg-raspberry-600 px-1.5 text-white' : ''}>{d.getDate()}</span>
-                {(byDay[key(d)] ?? []).map((e) => <p key={e.id} title={`${e.title} (${e.visibility})`} className={`mt-0.5 truncate rounded px-1 ${e.visibility === 'public' ? 'bg-hunter-100 text-hunter-800' : 'bg-raspberry-500/10 text-raspberry-600'}`}>{e.title}</p>)}
+                {(byDay[key(d)] ?? []).map((e) => <p key={e.id} title={`${e.title} (${e.visibility})`} className={`mt-0.5 truncate rounded px-1 ${sessionStatus(e) === 'ended' ? 'bg-gray-100 text-gray-400' : e.visibility === 'public' ? 'bg-hunter-100 text-hunter-800' : 'bg-raspberry-500/10 text-raspberry-600'}`}>{e.title}</p>)}
               </div>
             ))}
+          </div>
+        </Card>
+        <div className="space-y-6">
+        <Card>
+          <h2 className="mb-3 font-semibold">Study sessions</h2>
+          <div className="space-y-3">
+            {open.length === 0 && <p className="text-sm text-gray-500">No upcoming sessions this month.</p>}
+            {open.map((e) => <SessionCard key={e.id} event={e} me={me} people={groups.find((g) => g.id === e.study_group_id)?.members ?? []} />)}
           </div>
         </Card>
         <Card>
@@ -51,6 +62,7 @@ export default function Schedule({ month, events, groups }) {
             <Btn disabled={f.processing}>Add to schedule</Btn>
           </form>
         </Card>
+        </div>
       </div>
     </AppLayout>
   );

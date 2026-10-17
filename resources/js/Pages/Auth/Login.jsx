@@ -41,7 +41,7 @@ export default function Login({ status, canResetPassword }) {
                 <div className="mt-6 border-t border-gray-200 pt-4">
                     <p className="mb-2 text-xs text-gray-500">Demo accounts (local only)</p>
                     <div className="flex flex-wrap gap-2">
-                        {[['Anna', 'anna@studyhub.test'], ['Mark', 'mark@studyhub.test'], ['Admin', 'admin@studyhub.test']].map(([n, em]) => (
+                        {[['Admin', 'admin@studyhub.test']].map(([n, em]) => (
                             <button key={n} type="button" className="sh-chip" onClick={() => { setData({ ...data, email: em, password: 'password' }); }}>{n}</button>
                         ))}
                     </div>

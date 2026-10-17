@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { Eye, EyeOff } from 'lucide-react';
 import ShStyle from '@/Components/ShStyle';
-import StudyOrbit from '@/Components/StudyOrbit';
+
 
 const QUOTES = [
     'Alone we study. Together we understand.',
@@ -78,16 +78,29 @@ export default function AuthShell({ title, subtitle, youName = '', footer, child
             <aside className="relative hidden flex-col items-center justify-between overflow-hidden px-10 py-10 lg:flex"
                 style={{ background: 'radial-gradient(circle at 30% 20%, #4a7c52 0%, #355E3B 45%, #1d3321 100%)' }}>
                 <Link href="/" className="sh-display flex items-center gap-2 self-start text-lg font-extrabold text-white">
-                    <img src="/images/studyhub-logo.png" alt="" className="h-10 w-10 rounded-full bg-white" /> StudyHub
+                    <img src="/images/studyhub-logo.png" alt="" className="h-10 w-10 rounded-full bg-white" /> StudyHub-Group Circle System
                 </Link>
-                <StudyOrbit dark youName={youName} label={youName ? 'Your circle' : 'Study circle'} tone="#E30B5C" size={380} />
+                <div className="relative w-full max-w-md">
+    <img
+        src="/images/study-group.png"
+        alt="Four students studying together around open books"
+        draggable="false"
+        className="w-full select-none drop-shadow-2xl"
+    />
+    {youName.trim() && (
+        <div key="welcome" className="sh-pop absolute -bottom-4 left-4 flex items-center gap-2 rounded-full bg-[#E30B5C] px-4 py-2 text-sm font-semibold text-white shadow-lg">
+            <span className="h-2.5 w-2.5 rounded-full bg-green-300" />
+            Welcome, {youName.trim().split(' ')[0]}!
+        </div>
+    )}
+</div>
                 <Quotes />
             </aside>
 
             <main className="flex items-center justify-center px-6 py-12">
                 <div className="sh-fade w-full max-w-md">
                     <Link href="/" className="sh-display mb-8 flex items-center gap-2 text-lg font-extrabold text-[#355E3B] lg:hidden">
-                        <img src="/images/studyhub-logo.png" alt="" className="h-10 w-10 rounded-full bg-white" /> StudyHub
+                        <img src="/images/studyhub-logo.png" alt="" className="h-10 w-10 rounded-full bg-white" /> StudyHub-Group Circle System
                     </Link>
                     <h1 className="sh-display text-4xl font-extrabold text-[#1d3321]">{title}</h1>
                     <p className="mt-2 text-gray-600">{subtitle}</p>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -29,6 +30,10 @@ class HandleInertiaRequests extends Middleware
      */
     
 
+
+    
+
+
     public function share(Request $request): array
     {
         return [
@@ -41,8 +46,12 @@ class HandleInertiaRequests extends Middleware
                 'read' => (bool) $n->read_at, 'ago' => $n->created_at->diffForHumans(),
             ])->values() ?? [],
             'flash' => ['success' => fn () => $request->session()->get('success')],
+            'announcement' => fn () => Setting::get('announcement_enabled') === '1' ? Setting::get('announcement') : null,
+
         ];
     }
+    
+    
 
 }
 

@@ -1,4 +1,5 @@
 import '../css/app.css';
+import '../css/studyhub-theme.css';
 
 
 import { createInertiaApp } from '@inertiajs/react';

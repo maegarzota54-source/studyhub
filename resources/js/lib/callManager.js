@@ -13,6 +13,7 @@
  */
 import { useSyncExternalStore } from 'react';
 import Peer from 'peerjs';
+import { router } from '@inertiajs/react';
 
 const env = import.meta.env ?? {};
 function peerOptions() {
@@ -26,6 +27,7 @@ const fresh = () => ({
   status: 'idle',      // idle | calling (we dial) | ringing (someone dials us) | active
   video: false, label: '', incoming: null, peers: {}, local: null,
   muted: false, camOff: false, startedAt: null, error: null,
+  meeting: null,       // { id, title, groupId, host } when this call is a scheduled study session
 });
 let state = { ...fresh(), me: null, ready: false };
 const listeners = new Set();
@@ -36,6 +38,7 @@ export const useCall = () => useSyncExternalStore(subscribe, getState);
 
 let peer = null, calls = {}, pending = new Set(), incomingCall = null, localStream = null, ringTimer = null;
 let ringCtx = null, ringLoop = null;
+let callLog = null;      // which chat to leave a "call ended / missed" note in, e.g. { user_id } or { group_id }
 const key = (id) => `studyhub-user-${id}`;
 
 /* ---------- ringing sound (generated, no audio file needed) ---------- */
@@ -146,7 +149,26 @@ function cleanup() {
   calls = {}; pending = new Set(); incomingCall = null;
   localStream?.getTracks().forEach((t) => t.stop()); localStream = null;
 }
-export function end(message = null) {
+/** Leaves a one-line note in the chat the call was started from (only the person who called writes it). */
+function logCall(was, message, byUser) {
+  const log = callLog; callLog = null;
+  if (!log || (was !== 'calling' && was !== 'active')) return;
+  const answered = was === 'active' && state.startedAt;
+  const payload = { ...log, video: state.video, outcome: answered ? 'ended' : (byUser ? 'cancelled' : 'missed'),
+    seconds: answered ? Math.round((Date.now() - state.startedAt) / 1000) : 0 };
+  try { router.post(route('messages.call'), payload, { preserveScroll: true, preserveState: true, only: ['messages'], async: true }); } catch { /* the note is optional */ }
+}
+/** A scheduled study session counts as study time: log the minutes spent in the call to Progress automatically. */
+function logStudy(was) {
+  const m = state.meeting;
+  if (!m || was !== 'active' || !state.startedAt) return;
+  const minutes = Math.min(1440, Math.round((Date.now() - state.startedAt) / 60000));
+  if (minutes < 1) return;
+  try { router.post(route('progress.store'), { minutes, topic: m.title, study_group_id: m.groupId ?? '' }, { preserveScroll: true, preserveState: true, only: ['auth'], async: true }); } catch { /* optional */ }
+}
+export function end(message = null, byUser = false) {
+  logCall(state.status, message, byUser);
+  logStudy(state.status);
   if (state.status === 'calling') pending.forEach((k) => signal(k, 'cancelled'));
   cleanup();
   set({ ...fresh(), error: message });
@@ -154,29 +176,35 @@ export function end(message = null) {
 export const clearError = () => set({ error: null });
 
 /** targets = [{ id, name, avatar_url }]. Rings them all; the call becomes active when the first person answers. */
-export async function startCall(targets, { video = false } = {}) {
+export async function startCall(targets, { video = false, log = null, meeting = null } = {}) {
   if (state.status !== 'idle') { set({ error: 'You are already in a call.' }); return false; }
   const list = (targets || []).filter((t) => t && t.id !== state.me?.id);
   if (!list.length) return false;
   if (!peer || !state.ready) { set({ error: 'Calling is not ready yet. Check your internet connection and try again.' }); return false; }
   let stream;
   try { stream = await getMedia(video); } catch (e) { set({ error: mediaError(e) }); return false; }
-  localStream = stream;
+  localStream = stream; callLog = log;
   set({ ...fresh(), status: 'calling', video: video && stream.getVideoTracks().length > 0,
-    label: list.map((t) => t.name).join(', '), local: stream });
+    label: meeting ? meeting.title : list.map((t) => t.name).join(', '), local: stream, meeting });
   list.forEach((t) => {
     const k = key(t.id); pending.add(k);
-    wire(peer.call(k, stream, { metadata: { from: state.me, video: state.video } }), k, { id: t.id, name: t.name, avatar_url: t.avatar_url });
+    wire(peer.call(k, stream, { metadata: { from: state.me, video: state.video, meeting: meeting ? { id: meeting.id, title: meeting.title, groupId: meeting.groupId } : null } }), k, { id: t.id, name: t.name, avatar_url: t.avatar_url });
   });
   ringTimer = setTimeout(() => { if (state.status === 'calling') end('No answer.'); }, 45000);
   return true;
 }
 
 function onIncoming(call) {
-  const from = call.metadata?.from, video = !!call.metadata?.video;
+  const from = call.metadata?.from, video = !!call.metadata?.video, meeting = call.metadata?.meeting ?? null;
+  // Someone pressing "Join" on the session we are hosting: let them in without ringing.
+  if (from && meeting && state.meeting?.host && state.meeting.id === meeting.id && localStream && (state.status === 'calling' || state.status === 'active')) {
+    call.answer(localStream);
+    wire(call, call.peer, { id: from.id, name: from.name, avatar_url: from.avatar_url });
+    return;
+  }
   if (!from || state.status !== 'idle') { signal(call.peer, 'busy'); call.close(); return; }       // busy: the caller just sees it end
   incomingCall = call;
-  set({ ...fresh(), status: 'ringing', video, label: from.name, incoming: { from, video } });
+  set({ ...fresh(), status: 'ringing', video, label: from.name, incoming: { from, video, meeting } });
   startRing();
   ringTimer = setTimeout(() => { if (state.status === 'ringing') decline(); }, 45000);
   call.on('close', () => { if (incomingCall === call && state.status === 'ringing') end(`Missed call from ${from.name}.`); });
@@ -185,7 +213,7 @@ function onIncoming(call) {
 export async function accept() {
   const call = incomingCall;
   if (state.status !== 'ringing' || !call) return;
-  const { from, video } = state.incoming;
+  const { from, video, meeting } = state.incoming;
   clearTimeout(ringTimer); stopRing();
   let stream;
   try { stream = await getMedia(video); }
@@ -194,7 +222,7 @@ export async function accept() {
     catch (e2) { decline(mediaError(e2)); return; }
   }
   localStream = stream;
-  set({ status: 'active', local: stream, incoming: null, startedAt: Date.now(), video: video && stream.getVideoTracks().length > 0 });
+  set({ status: 'active', local: stream, incoming: null, startedAt: Date.now(), label: meeting?.title ?? state.label, meeting: meeting ? { ...meeting, host: false } : null, video: video && stream.getVideoTracks().length > 0 });
   const k = call.peer;
   wire(call, k, { id: from.id, name: from.name, avatar_url: from.avatar_url });
   call.answer(stream);
