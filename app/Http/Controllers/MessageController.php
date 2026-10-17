@@ -74,6 +74,36 @@ class MessageController extends Controller
         return back();
     }
 
+    /** A call finished (or was missed): leave a one-line note in the chat it was started from. Sent by the person who made the call. */
+    public function callLog(Request $request) {
+        $u = $request->user();
+        $d = $request->validate([
+            'user_id' => 'nullable|exists:users,id', 'group_id' => 'nullable|exists:study_groups,id',
+            'outcome' => 'required|in:ended,missed,cancelled', 'seconds' => 'nullable|integer|min:0|max:86400', 'video' => 'nullable|boolean',
+        ]);
+        abort_if(empty($d['user_id']) === empty($d['group_id']), 422, 'A call note belongs to exactly one chat.');
+        if (!empty($d['group_id'])) {
+            abort_unless(StudyGroup::findOrFail($d['group_id'])->hasMember($u), 403);
+            $where = ['study_group_id' => (int) $d['group_id']];
+        } else {
+            abort_unless($this->contacts($u)->contains('id', (int) $d['user_id']), 403);
+            $where = ['recipient_id' => (int) $d['user_id']];
+        }
+        $label = !empty($d['video']) ? 'video call' : 'voice call';
+        $secs = (int) ($d['seconds'] ?? 0);
+        $body = match ($d['outcome']) {
+            'ended' => sprintf('📞 %s ended · %d:%02d', ucfirst($label), intdiv($secs, 60), $secs % 60),
+            'missed' => "📞 Missed $label",
+            default => "📞 Cancelled $label",
+        };
+        $m = Message::create($where + ['sender_id' => $u->id, 'kind' => 'call', 'body' => $body]);
+        broadcast(new MessageSent($m))->toOthers();
+        if ($d['outcome'] === 'missed' && isset($where['recipient_id'])) {
+            User::find($where['recipient_id'])?->notify(new StudyHubNotice("Missed $label from {$u->name}", route('messages.index', ['user_id' => $u->id], false)));
+        }
+        return back();
+    }
+
     private function authorizeView(Request $request, Message $m): void {
         $u = $request->user();
         $ok = $m->study_group_id ? ($m->group->hasMember($u) || $u->isAdmin()) : in_array($u->id, [$m->sender_id, $m->recipient_id]);

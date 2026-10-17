@@ -15,7 +15,7 @@ const NAV = [
 const NAV_POSITION = 'side';
 
 export default function AppLayout({ title, children }) {
-  const { auth, unread, flash, announcement } = usePage().props;
+  const { auth, unread, flash, announcement, recent = [] } = usePage().props;
   const [panel, setPanel] = useState(null);  // which header dropdown is open: 'bell' | 'profile' | null
   const [open, setOpen] = useState(false);   // phone menu (hamburger)
 

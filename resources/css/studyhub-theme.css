@@ -1,0 +1,95 @@
+/*
+  StudyHub student theme
+  #081C15 primary background · #1B4322 emerald · #038666 secondary · #FBB02D buttons/highlights · #EBF2FA background/text
+  Applies only inside the student layout (the root <div> that has the class "sh-student").
+*/
+.sh-student { background: #081C15 !important; color: #EBF2FA; }
+
+/* ---------- sidebar ---------- */
+.sh-student aside {
+    background: linear-gradient(180deg, #1B4322 0%, #0f2b1a 100%) !important;
+    border-right: 1px solid rgba(235, 242, 250, .08);
+}
+.sh-student aside a, .sh-student aside button {
+    border-radius: .75rem; color: #EBF2FA;
+    transition: transform .18s ease, background .18s ease, color .18s ease, box-shadow .2s ease;
+}
+.sh-student aside a:hover { background: rgba(235, 242, 250, .10) !important; transform: translateX(4px); }
+.sh-student aside a svg { transition: transform .2s ease; }
+.sh-student aside a:hover svg { transform: scale(1.15) rotate(-4deg); }
+/* active item = highlight yellow */
+.sh-student aside a[class*="raspberry"], .sh-student aside a[aria-current="page"] {
+    background: #FBB02D !important; color: #081C15 !important; font-weight: 700;
+    box-shadow: 0 10px 22px -12px #FBB02D; transform: none;
+}
+
+/* ---------- top bar ---------- */
+.sh-student header {
+    background: rgba(8, 28, 21, .85) !important; backdrop-filter: blur(10px);
+    border-color: rgba(235, 242, 250, .10) !important; color: #EBF2FA;
+}
+.sh-student header h1 { color: #EBF2FA; }
+
+/* ---------- page background ---------- */
+.sh-student .bg-cool-100 { background: #081C15 !important; }
+.sh-student main {
+    color: #EBF2FA;
+    background: radial-gradient(900px 420px at 85% -10%, rgba(3, 134, 102, .22), transparent 60%), #081C15;
+}
+
+/* ---------- cards: light panels on the dark page ---------- */
+.sh-student .bg-white { background: #EBF2FA !important; color: #081C15; }
+.sh-student main section.bg-white, .sh-student main article.bg-white,
+.sh-student main .rounded-xl.bg-white, .sh-student main .rounded-2xl.bg-white {
+    border-color: rgba(3, 134, 102, .25) !important;
+    box-shadow: 0 12px 30px -20px rgba(0, 0, 0, .7);
+    transition: box-shadow .25s ease, border-color .25s ease, transform .25s ease;
+}
+.sh-student main section.bg-white:hover, .sh-student main article.bg-white:hover {
+    border-color: #038666 !important; box-shadow: 0 20px 44px -22px rgba(3, 134, 102, .65);
+}
+.sh-student main a.bg-white:hover { transform: translateY(-3px); }
+
+/* gray text: readable on the dark page, and back to normal inside light cards */
+.sh-student main .text-gray-500, .sh-student main .text-gray-600 { color: #9fc3b4; }
+.sh-student main .bg-white .text-gray-500, .sh-student main .bg-white .text-gray-600 { color: #4b5f55; }
+
+/* ---------- buttons ---------- */
+/* primary = highlight yellow */
+.sh-student main .bg-hunter-700, .sh-student main button.bg-\[\#355E3B\], .sh-student main a.bg-\[\#355E3B\] {
+    background: #FBB02D !important; color: #081C15 !important; font-weight: 700;
+    transition: transform .15s ease, filter .15s ease, box-shadow .2s ease;
+}
+.sh-student main .bg-hunter-700:hover, .sh-student main button.bg-\[\#355E3B\]:hover { filter: brightness(.95); box-shadow: 0 10px 22px -12px #FBB02D; }
+/* accent buttons = secondary teal */
+.sh-student main .bg-raspberry-600, .sh-student main .bg-raspberry-500 { background: #038666 !important; color: #fff !important; }
+.sh-student main .bg-raspberry-600:hover { filter: brightness(1.1); }
+.sh-student main button:active, .sh-student main a.bg-hunter-700:active { transform: scale(.97); }
+
+/* ---------- links, inputs, focus ---------- */
+.sh-student main .text-hunter-700, .sh-student main .text-\[\#355E3B\] { color: #038666; }
+.sh-student main .bg-white input, .sh-student main .bg-white select, .sh-student main .bg-white textarea { border-color: #b8cdc3; background: #fff; }
+.sh-student main input:focus, .sh-student main select:focus, .sh-student main textarea:focus {
+    border-color: #038666 !important; box-shadow: 0 0 0 3px rgba(3, 134, 102, .28) !important; outline: none;
+}
+.sh-student :focus-visible { outline: 3px solid #FBB02D !important; outline-offset: 2px; }
+
+/* dashboard hero banner */
+.sh-student main section[style*="linear-gradient"] { background: linear-gradient(135deg, #1B4322 0%, #038666 150%) !important; }
+
+/* ---------- motion ---------- */
+@keyframes shRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.sh-student main > * { animation: shRise .5s cubic-bezier(.2, .8, .2, 1) both; }
+.sh-student main > *:nth-child(2) { animation-delay: .06s; }
+.sh-student main > *:nth-child(3) { animation-delay: .12s; }
+.sh-student main > *:nth-child(4) { animation-delay: .18s; }
+
+/* ---------- scrollbars ---------- */
+.sh-student ::-webkit-scrollbar { width: 10px; height: 10px; }
+.sh-student ::-webkit-scrollbar-track { background: #081C15; }
+.sh-student ::-webkit-scrollbar-thumb { background: #1B4322; border-radius: 8px; }
+.sh-student ::-webkit-scrollbar-thumb:hover { background: #038666; }
+
+@media (prefers-reduced-motion: reduce) {
+    .sh-student *, .sh-student *::before { animation: none !important; transition: none !important; }
+}

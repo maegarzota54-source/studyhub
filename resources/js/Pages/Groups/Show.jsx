@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { MessageSquare } from 'lucide-react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
 import ChatPanel from '@/Components/ChatPanel';
 import CallPanel from '@/Components/CallPanel';
 import OnlineDot from '@/Components/OnlineDot';
+HEAD
+import SharedReader from '@/Components/SharedReader';
+
+import SessionCard from '@/Components/SessionCard';
+
 
 export default function GroupShow({ group, isGroupAdmin, members, messages, modules, tasks, events, auth }) {
   const [tab, setTab] = useState('chat');
   const me = auth.user;
   const [, tick] = useState(0);
   useEffect(() => { const f = () => tick((n) => n + 1); window.addEventListener('presence', f); return () => window.removeEventListener('presence', f); }, []);
-  const onlineOthers = members.filter((m) => m.id !== me.id && window.__online?.has(m.id)).map((m) => m.id);
+  const isOn = (id) => id === me.id || window.__online?.has(id);
+  const onlineList = members.filter((m) => isOn(m.id)), offlineList = members.filter((m) => !isOn(m.id));
   const mod = useForm({ kind: 'module', title: '', body: '', study_group_id: group.id, file: null });
 
   return (
@@ -24,7 +31,7 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
         </div>
       </Card>
       <div className="mb-4 flex gap-1 border-b border-gray-200" role="tablist">
-        {['chat', 'modules', 'tasks', 'schedule', 'members'].map((t) => (
+        {['chat', 'modules', 'tasks', 'schedule'].map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm capitalize ${tab === t ? 'border-b-2 border-raspberry-600 font-semibold text-hunter-700' : 'text-gray-500'}`}>{t}</button>
         ))}
@@ -33,7 +40,44 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
       {tab === 'chat' && (
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2"><ChatPanel threaded messages={messages} channel={`group.${group.id}`} postUrl={route('messages.group', group.id)} /></div>
+<<<<<<< HEAD
+          <SharedReader groupId={group.id} />
           <div className="space-y-3"><CallPanel targets={members.filter((m) => m.id !== me.id).map((m) => m.id)} people={members} /><p className="text-xs text-gray-500">{onlineOthers.length} other member(s) online</p></div>
+=======
+          <div className="space-y-3">
+            <CallPanel targets={members.filter((m) => m.id !== me.id).map((m) => m.id)} people={members} log={{ group_id: group.id }} />
+            <Card>
+              <h3 className="mb-2 text-sm font-semibold">Members <span className="font-normal text-gray-500">· {onlineList.length} online</span></h3>
+              <div className="max-h-72 overflow-y-auto pr-1">
+                {[['Online', onlineList], ['Offline', offlineList]].map(([label, list]) => list.length > 0 && (
+                  <div key={label} className="mb-2">
+                    <p className="sticky top-0 z-10 mb-1 bg-white py-0.5 text-xs font-semibold uppercase tracking-wide text-gray-400">{label} ({list.length})</p>
+                    {list.map((m) => {
+                      const row = (
+                        <>
+                          <div className="relative shrink-0">
+                            <img src={m.avatar_url} className="h-8 w-8 rounded-full" alt="" />
+                            <span className="absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-white"><OnlineDot userId={m.id} /></span>
+                          </div>
+                          <span className="min-w-0 flex-1 truncate text-sm">{m.name}{m.id === me.id && <span className="text-gray-400"> (you)</span>}{m.id === group.owner_id && <span className="ml-1 rounded bg-hunter-50 px-1.5 text-xs text-hunter-700">owner</span>}</span>
+                          {m.id !== me.id && <MessageSquare size={14} className="shrink-0 text-gray-400" />}
+                        </>
+                      );
+                      const cls = `flex items-center gap-2 rounded-lg px-1 py-1.5 ${label === 'Offline' ? 'opacity-60' : ''}`;
+                      return m.id === me.id
+                        ? <div key={m.id} className={cls}>{row}</div>
+                        : <Link key={m.id} href={route('messages.index', { user_id: m.id })} title={`Message ${m.name}`} className={`${cls} hover:bg-cool-100`}>{row}</Link>;
+                    })}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex gap-2 border-t border-gray-100 pt-3">
+                {group.owner_id !== me.id && <Btn variant="ghost" onClick={() => confirm('Leave this circle?') && router.delete(route('groups.leave', group.id))}>Leave circle</Btn>}
+                {group.owner_id === me.id && <Btn variant="accent" onClick={() => confirm('Delete this circle for everyone?') && router.delete(route('groups.destroy', group.id))}>Delete circle</Btn>}
+              </div>
+            </Card>
+          </div>
+>>>>>>> 5c7ed988e78ac3a459d732af7fbf19be60320d1c
         </div>
       )}
 
@@ -57,23 +101,8 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
       {tab === 'tasks' && <div className="space-y-2">{tasks.length === 0 && <p className="text-sm text-gray-500">No tasks yet. Add one from the Tasks page.</p>}
         {tasks.map((t) => <Card key={t.id}><Link href={route('tasks.show', t.id)} className="block"><b className={`hover:text-hunter-700 ${t.status === 'completed' ? 'text-gray-400 line-through' : ''}`}>{t.title}</b> <span className="text-xs text-gray-500">{t.assignees.length ? t.assignees.map((a) => a.name).join(', ') : 'Unassigned'} · {t.status} · due {t.due_date ?? '—'} · {t.comments_count} comment(s)</span></Link></Card>)}</div>}
 
-      {tab === 'schedule' && <div className="space-y-2">{events.length === 0 && <p className="text-sm text-gray-500">No sessions visible to you.</p>}
-        {events.map((e) => <Card key={e.id}><b>{e.title}</b> <span className="text-xs text-gray-500">{new Date(e.starts_at).toLocaleString()} · {e.visibility}</span></Card>)}</div>}
-
-      {tab === 'members' && (
-        <Card>
-          {members.map((m) => (
-            <div key={m.id} className="flex items-center gap-3 border-b border-gray-100 py-2 last:border-0">
-              <img src={m.avatar_url} className="h-8 w-8 rounded-full" alt="" /><span className="flex-1 text-sm">{m.name} <OnlineDot userId={m.id} /></span>
-              {m.id !== me.id && <a href={route('messages.index', { user_id: m.id })} className="text-xs text-hunter-700 underline">Message</a>}
-            </div>
-          ))}
-          <div className="mt-4 flex gap-2">
-            {group.owner_id !== me.id && <Btn variant="ghost" onClick={() => router.delete(route('groups.leave', group.id))}>Leave circle</Btn>}
-            {group.owner_id === me.id && <Btn variant="accent" onClick={() => confirm('Delete this circle for everyone?') && router.delete(route('groups.destroy', group.id))}>Delete circle</Btn>}
-          </div>
-        </Card>
-      )}
+      {tab === 'schedule' && <div className="space-y-3">{events.length === 0 && <p className="text-sm text-gray-500">No sessions visible to you.</p>}
+        {events.map((e) => <SessionCard key={e.id} event={e} people={members} me={me} />)}</div>}
     </AppLayout>
   );
 }
