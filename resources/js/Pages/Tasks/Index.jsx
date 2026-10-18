@@ -19,7 +19,7 @@ function TaskCard({ t }) {
   return (
     <Card className="transition hover:border-hunter-700/40">
       <div className="flex items-start gap-3">
-        <input type="checkbox" checked={done} aria-label="Mark complete" className="mt-1 h-4 w-4 rounded text-hunter-700"
+        <input type="checkbox" checked={done} disabled={!t.can_edit} title={t.can_edit ? undefined : 'Only the creator, a circle admin or an assigned member can tick this task'} aria-label="Mark complete" className="mt-1 h-4 w-4 rounded text-hunter-700 disabled:cursor-not-allowed disabled:opacity-50"
           onChange={() => router.patch(route('tasks.update', t.id), { status: done ? 'pending' : 'completed' }, { preserveScroll: true })} />
         <Link href={route('tasks.show', t.id)} className="min-w-0 flex-1">
           <p className={`font-medium hover:text-hunter-700 ${done ? 'text-gray-400 line-through' : ''}`}>{t.title}</p>

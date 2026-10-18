@@ -30,6 +30,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::get('/files', [NoteFileController::class, 'index'])->name('files.index');
     Route::post('/files', [NoteFileController::class, 'store'])->name('files.store');
     Route::get('/files/{file}/preview', [NoteFileController::class, 'preview'])->name('files.preview');
+    Route::get('/files/{file}/study', [NoteFileController::class, 'study'])->name('files.study');
     Route::get('/files/{file}/download', [NoteFileController::class, 'download'])->name('files.download');
     Route::delete('/files/{file}', [NoteFileController::class, 'destroy'])->name('files.destroy');
 

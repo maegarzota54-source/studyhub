@@ -1,21 +1,29 @@
 import { useState } from 'react';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowRight, Camera, Check, GraduationCap, ImagePlus, Plus, Users } from 'lucide-react';
+import { ArrowRight, Camera, Check, GraduationCap, ImagePlus, Plus, Users, X } from 'lucide-react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
 import { ActiveBadge, GroupCover } from '@/Components/GroupBits';
 
 /* ------------------------------------------------------------------ create form (with picture) */
 function CreateGroup() {
     const f = useForm({ title: '', topic: '', description: '', target_date: '', skill_level: 'beginner', mode: 'online', max_members: 10, cover: null });
+    const [open, setOpen] = useState(false);   // the form stays hidden until "Create circle group" is clicked
     const set = (k) => (e) => f.setData(k, e.target.value);
     const err = (k) => f.errors[k] && <p className="mt-1 text-xs text-[#C81E51]">{f.errors[k]}</p>;
     const label = 'mb-1 block text-sm font-medium';
     const preview = f.data.cover ? URL.createObjectURL(f.data.cover) : null;
 
+    if (!open) {
+        return <Btn type="button" onClick={() => setOpen(true)} aria-expanded="false" aria-controls="create-circle-form"><span className="inline-flex items-center gap-1.5"><Plus size={16} aria-hidden="true" /> Create circle group</span></Btn>;
+    }
+
     return (
-        <Card>
-            <h2 className="mb-3 flex items-center gap-2 font-semibold"><Plus size={18} aria-hidden="true" /> Create a study circle</h2>
-            <form onSubmit={(e) => { e.preventDefault(); f.post(route('groups.store'), { forceFormData: true }); }} className="grid gap-3 md:grid-cols-2">
+        <Card id="create-circle-form">
+            <div className="mb-3 flex items-center justify-between gap-2">
+                <h2 className="flex items-center gap-2 font-semibold"><Plus size={18} aria-hidden="true" /> Create a study circle</h2>
+                <button type="button" onClick={() => setOpen(false)} aria-label="Close the form" aria-expanded="true" aria-controls="create-circle-form" className="rounded-lg p-1 text-gray-400 hover:bg-black/5 hover:text-gray-700"><X size={18} /></button>
+            </div>
+            <form onSubmit={(e) => { e.preventDefault(); f.post(route('groups.store'), { forceFormData: true, onSuccess: () => { f.reset(); setOpen(false); } }); }} className="grid gap-3 md:grid-cols-2">
                 <div><label className={label} htmlFor="g-title">Group title</label><input id="g-title" className={inputCls} value={f.data.title} onChange={set('title')} />{err('title')}</div>
                 <div><label className={label} htmlFor="g-topic">Topic of study</label><input id="g-topic" className={inputCls} value={f.data.topic} onChange={set('topic')} />{err('topic')}</div>
                 <div><label className={label} htmlFor="g-date">Target date</label><input id="g-date" type="date" className={inputCls} value={f.data.target_date} onChange={set('target_date')} />{err('target_date')}</div>
@@ -105,7 +113,7 @@ function MineCard({ g }) {
             </GroupCover>
             <div className="flex items-center justify-between p-4">
                 <span className="flex items-center gap-1 text-xs text-gray-500"><Users size={13} aria-hidden="true" /> {g.members_count}/{g.max_members} members{admin && ' · admin'}</span>
-                <Link href={route('groups.show', g.id)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#FBB02D] px-4 py-2 text-sm font-semibold text-[#081C15] transition-all hover:brightness-95 active:scale-95">Open <ArrowRight size={14} /></Link>
+                <Link href={route('groups.show', g.id)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#FBB02D] px-4 py-2 text-sm font-semibold text-[#081C15] transition-all hover:brightness-95 active:scale-95"><Check size={14} aria-hidden="true" /> Joined</Link>
             </div>
         </article>
     );

@@ -5,7 +5,6 @@ import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
 import ChatPanel from '@/Components/ChatPanel';
 import CallPanel from '@/Components/CallPanel';
 import OnlineDot from '@/Components/OnlineDot';
-HEAD
 import SharedReader from '@/Components/SharedReader';
 
 import SessionCard from '@/Components/SessionCard';
@@ -40,10 +39,7 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
       {tab === 'chat' && (
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2"><ChatPanel threaded messages={messages} channel={`group.${group.id}`} postUrl={route('messages.group', group.id)} /></div>
-<<<<<<< HEAD
           <SharedReader groupId={group.id} />
-          <div className="space-y-3"><CallPanel targets={members.filter((m) => m.id !== me.id).map((m) => m.id)} people={members} /><p className="text-xs text-gray-500">{onlineOthers.length} other member(s) online</p></div>
-=======
           <div className="space-y-3">
             <CallPanel targets={members.filter((m) => m.id !== me.id).map((m) => m.id)} people={members} log={{ group_id: group.id }} />
             <Card>
@@ -77,7 +73,6 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
               </div>
             </Card>
           </div>
->>>>>>> 5c7ed988e78ac3a459d732af7fbf19be60320d1c
         </div>
       )}
 
