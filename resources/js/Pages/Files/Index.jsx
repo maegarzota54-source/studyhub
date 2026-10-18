@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import { Download, Eye, X } from 'lucide-react';
+import { Download, Eye, GraduationCap, X } from 'lucide-react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
+import StudyModal from '@/Components/StudyModal';
 
 const size = (b) => (b ? (b > 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.ceil(b / 1e3) + ' KB') : '');
 
@@ -123,18 +124,21 @@ function PreviewModal({ item, onClose }) {
 export default function Files({ items, groups, filters }) {
   const [previewId, setPreviewId] = useState(null);
   const previewItem = items.find((i) => i.id === previewId);
+  const [studyId, setStudyId] = useState(null);
+  const studyItem = items.find((i) => i.id === studyId);
   const f = useForm({ kind: 'note', title: '', body: '', study_group_id: '', file: null });
+  const [fileKey, setFileKey] = useState(0);   // changing this remounts the file input so the chosen file name disappears
   const filter = (k, v) => router.get(route('files.index'), { ...filters, [k]: v || undefined }, { preserveState: true });
   return (
     <AppLayout title="Notes & Files">
       <Head title="Notes & Files" />
       <Card className="mb-4">
-        <form onSubmit={(e) => { e.preventDefault(); f.post(route('files.store'), { forceFormData: true, onSuccess: () => f.reset('title', 'body', 'file') }); }} className="grid gap-2 md:grid-cols-4">
+        <form onSubmit={(e) => { e.preventDefault(); f.post(route('files.store'), { forceFormData: true, onSuccess: () => { f.reset(); setFileKey((k) => k + 1); } }); }} className="grid gap-2 md:grid-cols-4">
           <select className={inputCls} value={f.data.kind} onChange={(e) => f.setData('kind', e.target.value)}><option value="note">Note</option><option value="file">File</option><option value="module">Study module</option></select>
           <select className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData('study_group_id', e.target.value)}><option value="">Personal</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select>
           <input className={`${inputCls} md:col-span-2`} placeholder="Title" value={f.data.title} onChange={(e) => f.setData('title', e.target.value)} />
           <textarea className={`${inputCls} md:col-span-3`} placeholder="Note text (optional)" value={f.data.body} onChange={(e) => f.setData('body', e.target.value)} />
-          <input type="file" className={inputCls} onChange={(e) => f.setData('file', e.target.files[0])} />
+          <input key={fileKey} type="file" className={inputCls} onChange={(e) => f.setData('file', e.target.files[0] ?? null)} />
           {Object.values(f.errors).map((m) => <p key={m} className="text-xs text-raspberry-600 md:col-span-4">{m}</p>)}
           <Btn disabled={f.processing}>Save</Btn>
         </form>
@@ -154,11 +158,13 @@ export default function Files({ items, groups, filters }) {
             <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{i.title}</p>
               <p className="text-xs text-gray-500">{i.kind} · {i.group?.title ?? 'Personal'} · {i.user.name} {size(i.size)}{i.message_id && <span className="ml-2 rounded bg-hunter-100 px-1.5 text-hunter-800">from chat</span>}</p></div>
             {(i.preview || i.body || i.path) && <button className="inline-flex items-center gap-1 text-sm text-hunter-700 hover:underline" onClick={() => setPreviewId(i.id)}><Eye size={14} /> Preview</button>}
+            {i.studyable && <button className="inline-flex items-center gap-1 text-sm text-hunter-700 hover:underline" onClick={() => setStudyId(i.id)}><GraduationCap size={14} /> Study</button>}
             {i.path && <a className="text-sm text-hunter-700 underline" href={route('files.download', i.id)}>Download</a>}
             <button className="text-sm text-raspberry-600" onClick={() => confirm('Delete?') && router.delete(route('files.destroy', i.id))}>Delete</button>
           </div>
         ))}
       </Card>
+      {studyItem && <StudyModal key={studyItem.id} item={studyItem} onClose={() => setStudyId(null)} />}
       {previewItem && <PreviewModal key={previewItem.id} item={previewItem} onClose={() => setPreviewId(null)} />}
     </AppLayout>
   );

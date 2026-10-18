@@ -23,6 +23,7 @@ class GroupExtrasController extends Controller
         $groups = StudyGroup::query()->withCount('members')
             ->withExists(['members as is_member' => fn ($q) => $q->whereKey($u->id)])
             ->with('members:users.id,users.name,users.avatar')
+            ->whereDoesntHave('members', fn ($q) => $q->whereKey($u->id))   // circles you already joined live in My Groups
             ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))
             ->when($request->skill_level, fn ($q, $v) => $q->where('skill_level', $v))
             ->when($request->mode, fn ($q, $v) => $q->where('mode', $v))
