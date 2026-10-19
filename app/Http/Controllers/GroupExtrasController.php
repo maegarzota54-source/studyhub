@@ -23,7 +23,7 @@ class GroupExtrasController extends Controller
         $groups = StudyGroup::query()->withCount('members')
             ->withExists(['members as is_member' => fn ($q) => $q->whereKey($u->id)])
             ->with('members:users.id,users.name,users.avatar')
-            ->whereDoesntHave('members', fn ($q) => $q->whereKey($u->id))   // circles you already joined live in My Groups
+            ->whereDoesntHave('members', fn ($q) => $q->whereKey($u->id))
             ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))
             ->when($request->skill_level, fn ($q, $v) => $q->where('skill_level', $v))
             ->when($request->mode, fn ($q, $v) => $q->where('mode', $v))
@@ -90,11 +90,23 @@ class GroupExtrasController extends Controller
         $rows = DB::table('group_members')->join('users', 'users.id', '=', 'group_members.user_id')
             ->whereIn('group_members.study_group_id', $ids)
             ->where('group_members.last_active_at', '>=', now()->subSeconds(self::ACTIVE_SECONDS))
-            ->get(['group_members.study_group_id as gid', 'users.name']);
+            ->get(['group_members.study_group_id as gid', 'users.id', 'users.name', 'users.avatar']);
         $out = [];
         foreach ($ids as $id) {
             $r = $rows->where('gid', $id);
-            $out[$id] = ['active' => $r->isNotEmpty(), 'count' => $r->count(), 'names' => $r->pluck('name')->take(3)->values()];
+            $activeMembers = $r->map(fn ($member) => [
+                'id' => $member->id,
+                'name' => $member->name,
+                'avatar_url' => $member->avatar
+                    ? route('profile.avatar', $member->id, false).'?v='.substr(md5($member->avatar), 0, 8)
+                    : 'https://ui-avatars.com/api/?background=355E3B&color=fff&name='.urlencode($member->name ?: 'User'),
+            ])->values();
+            $out[$id] = [
+                'active' => $r->isNotEmpty(),
+                'count' => $r->count(),
+                'names' => $r->pluck('name')->take(3)->values(),
+                'members' => $activeMembers,
+            ];
         }
         return response()->json($out);
     }
@@ -173,16 +185,10 @@ class GroupExtrasController extends Controller
             : in_array($u->id, [$message->sender_id, $message->recipient_id], true);
         abort_unless($ok && $message->attachment_path, 403);
 
-        $kind = $this->kind($message->attachment_name);
-        abort_if($kind === 'none', 415, 'No preview for this file type.');
-        $ext = strtolower(pathinfo($message->attachment_name, PATHINFO_EXTENSION));
-        $type = match (true) {
-            $kind === 'pdf' => 'application/pdf',
-            $kind === 'text' => 'text/plain; charset=UTF-8',
-            default => ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp'][$ext],
-        };
+        $type = NoteFileController::previewMimeType($message->attachment_path);
+        abort_unless($type && Storage::exists($message->attachment_path), 404);
         return Storage::response($message->attachment_path, $message->attachment_name, [
             'Content-Type' => $type, 'X-Content-Type-Options' => 'nosniff',
-        ]);
+        ], 'inline');
     }
 }

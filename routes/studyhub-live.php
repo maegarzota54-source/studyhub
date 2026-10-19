@@ -4,7 +4,7 @@ use App\Http\Controllers\{GroupExtrasController, MessageHubController};
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'active'])->group(function () {
-    // Find Groups: join flips to "Joined", members shown, teacher badge, cover upload on create
+    // Find Groups: joining a circle removes it from discovery; members and teacher badges shown
     Route::get('/groups/find', [GroupExtrasController::class, 'find'])->name('groups.find');
     Route::post('/groups', [GroupExtrasController::class, 'store'])->name('groups.store');
     Route::post('/groups/{group}/join', [GroupExtrasController::class, 'join'])->name('groups.join');

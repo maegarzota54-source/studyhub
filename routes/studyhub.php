@@ -2,7 +2,7 @@
 // Add to the bottom of routes/web.php:  require __DIR__.'/studyhub.php';
 // (and remove Breeze's default '/dashboard' route to avoid a duplicate name)
 use App\Http\Controllers\{DashboardController, GroupController, MemberController, MessageController, NoteFileController,
-    ScheduleController, TaskController, ProgressController, NotificationController};
+    ScheduleController, StudyGeneratorController, TaskController, ProgressController, NotificationController};
 use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,16 +21,21 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
 
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::post('/messages/call-log', [MessageController::class, 'callLog'])->name('messages.call');
+    Route::post('/messages/receipts', [MessageController::class, 'receipt'])->name('messages.receipts');
     Route::post('/messages/direct/{user}', [MessageController::class, 'storeDirect'])->name('messages.direct');
     Route::post('/groups/{group}/messages', [MessageController::class, 'storeGroup'])->name('messages.group');
     Route::post('/messages/{message}/save', [MessageController::class, 'saveToFiles'])->name('messages.save');
     Route::post('/messages/{message}/flag', [MessageController::class, 'flag'])->name('messages.flag');
+    Route::post('/messages/{message}/reaction', [MessageController::class, 'react'])->name('messages.react');
     Route::get('/messages/{message}/attachment', [MessageController::class, 'attachment'])->name('messages.attachment');
+    Route::patch('/messages/{message}', [MessageController::class, 'update'])->name('messages.update');
+    Route::delete('/messages/{message}/hide', [MessageController::class, 'hideForMe'])->name('messages.hide');
+    Route::delete('/messages/{message}', [MessageController::class, 'unsend'])->name('messages.unsend');
 
     Route::get('/files', [NoteFileController::class, 'index'])->name('files.index');
     Route::post('/files', [NoteFileController::class, 'store'])->name('files.store');
+    Route::post('/files/{file}/study', [StudyGeneratorController::class, 'generate'])->name('files.study');
     Route::get('/files/{file}/preview', [NoteFileController::class, 'preview'])->name('files.preview');
-    Route::get('/files/{file}/study', [NoteFileController::class, 'study'])->name('files.study');
     Route::get('/files/{file}/download', [NoteFileController::class, 'download'])->name('files.download');
     Route::delete('/files/{file}', [NoteFileController::class, 'destroy'])->name('files.destroy');
 

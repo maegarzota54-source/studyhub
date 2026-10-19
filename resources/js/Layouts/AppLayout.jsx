@@ -15,7 +15,7 @@ const NAV = [
 const NAV_POSITION = 'side';
 
 export default function AppLayout({ title, children }) {
-  const { auth, unread, flash, announcement, recent = [] } = usePage().props;
+  const { auth, unread, flash, announcement, peerNamespace, recent = [] } = usePage().props;
   const [panel, setPanel] = useState(null);  // which header dropdown is open: 'bell' | 'profile' | null
   const [open, setOpen] = useState(false);   // phone menu (hamburger)
 
@@ -33,7 +33,7 @@ export default function AppLayout({ title, children }) {
 
   // Tell the server we're here (every 30s) so the Members page and call buttons know who is active,
   // and get ready to place or receive calls on any page.
-  useEffect(() => { initCalls(auth.user); return startHeartbeat(); }, []);   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { initCalls(auth.user, peerNamespace); return startHeartbeat(); }, []);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // Optional instant presence through Laravel Echo (only if Echo/Reverb is set up). The heartbeat above works without it.
   useEffect(() => {
@@ -130,8 +130,9 @@ export default function AppLayout({ title, children }) {
     <div className="border-b border-gray-200 bg-white px-4 py-3 md:px-6"><h1 className="truncate text-lg font-semibold md:text-xl">{title}</h1></div>
   );
   const flashBar = flash?.success && <div className="bg-hunter-100 px-4 py-2 text-sm text-hunter-800 md:px-6">{flash.success}</div>;
-  {announcement && <div role="status" className="bg-[#E30B5C] px-6 py-2 text-sm text-white">{announcement}</div>}
-
+  const announcementBar = announcement && auth.user.role !== 'admin'
+    ? <div role="status" className="bg-[#E30B5C] px-4 py-3 text-sm font-medium text-white md:px-6">{announcement}</div>
+    : null;
 
   if (isTop) {
     return (
@@ -145,8 +146,8 @@ export default function AppLayout({ title, children }) {
           </div>
           {open && <nav className="space-y-1 border-t border-hunter-800 px-3 py-3 xl:hidden" aria-label="Main menu">{links('stack')}</nav>}
         </header>
-        {titleStrip}{flashBar}
-        <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
+        {titleStrip}{flashBar}{announcementBar}
+        <main className="min-w-0 flex-1 p-3 sm:p-4 md:p-6">{children}</main>
         <CallOverlay />
       </div>
     );
@@ -158,7 +159,6 @@ export default function AppLayout({ title, children }) {
       <aside className="hidden w-60 shrink-0 flex-col bg-hunter-700 text-white md:flex">
         <div className="px-5 py-5">{logo}</div>
         <nav className="flex-1 space-y-1 px-3" aria-label="Main menu">{links('stack')}</nav>
-        <Link href={route('profile.edit')} className="m-3 rounded-lg px-3 py-2 text-sm text-hunter-100 hover:bg-hunter-800">Profile</Link>
       </aside>
 
       {/* phone: slide-in drawer */}
@@ -170,7 +170,6 @@ export default function AppLayout({ title, children }) {
               <button onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-hunter-800" aria-label="Close menu"><X size={22} /></button>
             </div>
             <nav className="flex-1 space-y-1" aria-label="Main menu">{links('stack')}</nav>
-            <Link href={route('profile.edit')} onClick={() => setOpen(false)} className="mt-3 rounded-lg px-3 py-2 text-sm text-hunter-100 hover:bg-hunter-800">Profile</Link>
           </aside>
         </div>
       )}
@@ -188,7 +187,8 @@ export default function AppLayout({ title, children }) {
         </header>
         <div className="md:hidden">{titleStrip}</div>
         {flashBar}
-        <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
+        {announcementBar}
+        <main className="min-w-0 flex-1 p-3 sm:p-4 md:p-6">{children}</main>
       </div>
       <CallOverlay />
     </div>

@@ -2,7 +2,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\{NoteFile, StudyGroup};
-use App\Services\{GeminiQuiz, StudyQuiz};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -23,15 +22,16 @@ class NoteFileController extends Controller
         'mp4' => ['video', 'video/mp4'], 'webm' => ['video', 'video/webm'],
     ];
 
-    private function previewInfo(NoteFile $f): ?array {
-        return $f->path ? (self::PREVIEWABLE[strtolower(pathinfo($f->path, PATHINFO_EXTENSION))] ?? null) : null;
+    public static function previewType(?string $path): ?string {
+        return $path ? (self::PREVIEWABLE[strtolower(pathinfo($path, PATHINFO_EXTENSION))][0] ?? null) : null;
     }
 
-    /** Types we can read text from to build study questions. */
-    private const STUDYABLE = ['txt', 'md', 'csv', 'log', 'docx', 'pptx', 'pdf'];
+    public static function previewMimeType(?string $path): ?string {
+        return $path ? (self::PREVIEWABLE[strtolower(pathinfo($path, PATHINFO_EXTENSION))][1] ?? null) : null;
+    }
 
-    private function studyable(NoteFile $f): bool {
-        return trim((string) $f->body) !== '' || ($f->path && in_array(strtolower(pathinfo($f->path, PATHINFO_EXTENSION)), self::STUDYABLE, true));
+    private function previewInfo(NoteFile $f): ?array {
+        return $f->path ? (self::PREVIEWABLE[strtolower(pathinfo($f->path, PATHINFO_EXTENSION))] ?? null) : null;
     }
 
     public function index(Request $request) {
@@ -41,10 +41,7 @@ class NoteFileController extends Controller
             ->when(is_numeric($request->group_id), fn ($q) => $q->where('study_group_id', $request->group_id))
             ->when($request->kind, fn ($q, $k) => $q->where('kind', $k))
             ->latest()->get()
-            ->each(function ($f) {
-                $f->setAttribute('preview', $this->previewInfo($f)[0] ?? null);
-                $f->setAttribute('studyable', $this->studyable($f));
-            });   // image | pdf | text | audio | video | null
+            ->each(fn ($f) => $f->setAttribute('preview', $this->previewInfo($f)[0] ?? null));   // image | pdf | text | audio | video | null
         return Inertia::render('Files/Index', ['items' => $items, 'groups' => $u->groups()->get(['study_groups.id', 'title']), 'filters' => $request->only('group_id', 'kind')]);
     }
 
@@ -81,38 +78,6 @@ class NoteFileController extends Controller
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, max-age=300',
         ]);
-    }
-
-    /** Flashcards, multiple choice and situational questions (with answers) built from the note text and/or file text. */
-    public function study(Request $request, NoteFile $file) {
-        abort_unless(NoteFile::visibleTo($request->user())->whereKey($file->id)->exists(), 403);
-        $parts = []; $notice = null;
-        if (trim((string) $file->body) !== '') $parts[] = $file->body;
-        if ($file->path && Storage::exists($file->path)) {
-            try { $text = StudyQuiz::extractText(Storage::path($file->path), pathinfo($file->path, PATHINFO_EXTENSION), $notice); }
-            catch (\Throwable $e) { report($e); $text = null; $notice = 'Could not read the text of this file.'; }
-            if ($text) $parts[] = $text;
-        }
-        if (!$parts) {
-            $quiz = ['flashcards' => [], 'multiple_choice' => [], 'situational' => [], 'notes' => [$notice ?: 'There is no text in this item to study from.']];
-            $source = 'none';
-        } else {
-            $text = implode("\n\n", $parts);
-            $why = null; $quiz = null; $source = 'ai';
-            if (GeminiQuiz::enabled()) {
-                @set_time_limit(150);   // the AI call can take longer than PHP's default 30 seconds
-                try { $quiz = GeminiQuiz::generate($text, $why); }
-                catch (\Throwable $e) { report($e); $quiz = null; $why = 'Something went wrong while asking Gemini.'; }
-            }
-            if (!$quiz) {   // no key, limit reached or any error: use the basic built-in generator
-                $source = 'basic';
-                try { $quiz = StudyQuiz::build($text, (int) $file->id); }
-                catch (\Throwable $e) { report($e); $quiz = ['flashcards' => [], 'multiple_choice' => [], 'situational' => [], 'notes' => ['Could not make questions from this text.']]; }
-                if (GeminiQuiz::enabled() && $why) array_unshift($quiz['notes'], 'AI questions are not available right now: ' . $why . ' Showing basic questions instead.');
-            }
-            if ($notice) $quiz['notes'][] = $notice;
-        }
-        return response()->json($quiz + ['title' => $file->title, 'source' => $source]);
     }
 
     public function destroy(Request $request, NoteFile $file) {
