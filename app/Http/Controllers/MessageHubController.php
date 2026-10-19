@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Support\ChatReadReceipts;
 use Illuminate\Http\Request;
 use Inertia\Response;
 
@@ -21,10 +22,23 @@ class MessageHubController extends Controller
             $extra['group'] = $g;
             $extra['groupMembers'] = $g->members()->get(['users.id', 'users.name', 'users.avatar'])->values();
             $extra['peer'] = null;
-            $extra['messages'] = $g->messages()->whereNull('parent_id')
-                ->with('sender:id,name,avatar')
-                ->with(['replies' => fn ($q) => $q->with('sender:id,name,avatar')])
+            $extra['messages'] = $g->messages()->whereNull('parent_id')->visibleTo($u)
+                ->with(['sender:id,name,avatar', 'reactions:id,name'])
+                ->with(['replies' => fn ($q) => $q->visibleTo($u)->with(['sender:id,name,avatar', 'reactions:id,name'])])
                 ->latest()->limit(100)->get()->reverse()->values();
+            ChatReadReceipts::attach(
+                $extra['messages'],
+                ChatReadReceipts::groupKey($g->id),
+                $u->id,
+                $extra['groupMembers']->pluck('id')->all(),
+            );
+            $extra['messages']->each(function ($message) {
+                $message->setAttribute('attachment_preview', NoteFileController::previewType($message->attachment_path));
+                $message->replies->each(fn ($reply) => $reply->setAttribute(
+                    'attachment_preview',
+                    NoteFileController::previewType($reply->attachment_path),
+                ));
+            });
         }
         return $response instanceof Response ? $response->with($extra) : $response;
     }

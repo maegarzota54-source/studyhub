@@ -36,3 +36,30 @@ export function ActiveBadge({ groupId, onCover = false }) {
         </span>
     );
 }
+
+/** Profile photos of members currently active in the group's chat or workspace. */
+export function ActiveAvatars({ groupId }) {
+    const [, tick] = useState(0);
+    useEffect(() => subscribe(() => tick((n) => n + 1)), []);
+    const members = getActivity(groupId)?.members ?? [];
+    if (!members.length) return null;
+
+    return (
+        <div className="flex items-center -space-x-2" aria-label={`Active members: ${members.map((member) => member.name).join(', ')}`}>
+            {members.slice(0, 5).map((member) => (
+                <span key={member.id} tabIndex={0} role="img" aria-label={member.name}
+                    className="group/avatar relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#FBB02D]">
+                    <img src={member.avatar_url} alt="" className="h-8 w-8 rounded-full border-2 border-white object-cover shadow-sm" />
+                    <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#081C15] px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity group-hover/avatar:opacity-100 group-focus-visible/avatar:opacity-100">
+                        {member.name}
+                    </span>
+                </span>
+            ))}
+            {members.length > 5 && (
+                <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#081C15]/80 text-[10px] font-bold text-white">
+                    +{members.length - 5}
+                </span>
+            )}
+        </div>
+    );
+}

@@ -2,11 +2,13 @@
 namespace App\Http\Controllers;
 
 use App\Events\MessageSent;
-use App\Models\{Message, NoteFile, StudyGroup, User};
+use App\Models\{ChatReadState, Message, MessageReaction, NoteFile, StudyGroup, User};
 use App\Notifications\StudyHubNotice;
+use App\Support\ChatReadReceipts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class MessageController extends Controller
@@ -24,6 +26,7 @@ class MessageController extends Controller
         // Most recent direct message per contact, so the list can show a preview and sort by activity.
         $last = Message::whereNull('study_group_id')->whereNotNull('recipient_id')
             ->where(fn ($q) => $q->where('sender_id', $u->id)->orWhere('recipient_id', $u->id))
+            ->visibleTo($u)
             ->latest()->limit(500)->get()
             ->unique(fn ($m) => $m->sender_id === $u->id ? $m->recipient_id : $m->sender_id)
             ->keyBy(fn ($m) => $m->sender_id === $u->id ? $m->recipient_id : $m->sender_id);
@@ -36,7 +39,20 @@ class MessageController extends Controller
         $messages = $peer ? Message::whereNull('study_group_id')
             ->where(fn ($q) => $q->where(fn ($w) => $w->where('sender_id', $u->id)->where('recipient_id', $peer->id))
                 ->orWhere(fn ($w) => $w->where('sender_id', $peer->id)->where('recipient_id', $u->id)))
-            ->with('sender:id,name,avatar')->withExists('savedFiles as saved')->oldest()->limit(200)->get() : [];
+            ->visibleTo($u)
+            ->with(['sender:id,name,avatar', 'reactions:id,name'])->withExists('savedFiles as saved')->latest()->limit(200)->get()->reverse()->values() : [];
+        if ($peer) {
+            ChatReadReceipts::attach(
+                $messages,
+                ChatReadReceipts::directKey($u->id, $peer->id),
+                $u->id,
+                [$peer->id],
+            );
+            $messages->each(fn ($message) => $message->setAttribute(
+                'attachment_preview',
+                NoteFileController::previewType($message->attachment_path),
+            ));
+        }
         return Inertia::render('Messages/Index', ['contacts' => $contacts->each->append('avatar_url'), 'peer' => $peer, 'messages' => $messages]);
     }
 
@@ -110,10 +126,125 @@ class MessageController extends Controller
         abort_unless($ok, 403);
     }
 
+    public function receipt(Request $request) {
+        $data = $request->validate([
+            'message_id' => 'required|integer|exists:messages,id',
+            'status' => 'required|in:delivered,read',
+        ]);
+        $message = Message::findOrFail($data['message_id']);
+        $this->authorizeView($request, $message);
+
+        $user = $request->user();
+        if ($message->study_group_id) {
+            $group = $message->group;
+            abort_unless($group->hasMember($user) || $user->isAdmin(), 403);
+            $conversationKey = ChatReadReceipts::groupKey($group->id);
+        } else {
+            $peerId = $message->sender_id === $user->id ? $message->recipient_id : $message->sender_id;
+            $conversationKey = ChatReadReceipts::directKey($user->id, $peerId);
+        }
+
+        DB::transaction(function () use ($user, $conversationKey, $message, $data) {
+            $state = ChatReadState::firstOrCreate(
+                ['user_id' => $user->id, 'conversation_key' => $conversationKey],
+                ['delivered_through_id' => $message->id],
+            );
+            $state = ChatReadState::whereKey($state->id)->lockForUpdate()->firstOrFail();
+            $state->delivered_through_id = max($state->delivered_through_id ?? 0, $message->id);
+            if ($data['status'] === 'read') {
+                $state->read_through_id = max($state->read_through_id ?? 0, $message->id);
+            }
+            $state->save();
+        });
+
+        broadcast(new MessageSent($message))->toOthers();
+
+        return response()->json(['ok' => true]);
+    }
+
     public function attachment(Request $request, Message $message) {
         $this->authorizeView($request, $message);
         abort_unless($message->attachment_path, 404);
         return Storage::download($message->attachment_path, $message->attachment_name);
+    }
+
+    public function react(Request $request, Message $message) {
+        $this->authorizeView($request, $message);
+        $data = $request->validate([
+            'emoji' => ['required', 'string', Rule::in(['👍', '❤️', '😂', '🎉', '🙏'])],
+        ]);
+
+        DB::transaction(function () use ($request, $message, $data) {
+            $reaction = MessageReaction::where('message_id', $message->id)
+                ->where('user_id', $request->user()->id)
+                ->lockForUpdate()
+                ->first();
+
+            if ($reaction?->emoji === $data['emoji']) {
+                $reaction->delete();
+                return;
+            }
+
+            if ($reaction) {
+                $reaction->update(['emoji' => $data['emoji']]);
+            } else {
+                MessageReaction::create([
+                    'message_id' => $message->id,
+                    'user_id' => $request->user()->id,
+                    'emoji' => $data['emoji'],
+                ]);
+            }
+        });
+
+        broadcast(new MessageSent($message))->toOthers();
+        return back();
+    }
+
+    public function unsend(Request $request, Message $message) {
+        abort_unless($message->sender_id === $request->user()->id, 403, 'You can only unsend your own messages.');
+        $this->authorizeView($request, $message);
+
+        $messageIds = collect([$message->id]);
+        $frontier = $messageIds;
+        while ($frontier->isNotEmpty()) {
+            $frontier = Message::whereIn('parent_id', $frontier)->pluck('id');
+            $messageIds = $messageIds->merge($frontier);
+        }
+        $paths = Message::whereIn('id', $messageIds)->whereNotNull('attachment_path')->pluck('attachment_path');
+
+        $existingPaths = $paths->filter(fn ($path) => Storage::exists($path));
+        if ($existingPaths->isNotEmpty() && !Storage::delete($existingPaths->all())) {
+            throw new \RuntimeException('Unable to remove the message attachment.');
+        }
+        $message->delete();
+        broadcast(new MessageSent($message))->toOthers();
+
+        return back()->with('success', 'Message unsent.');
+    }
+
+    public function update(Request $request, Message $message) {
+        $this->authorizeView($request, $message);
+        abort_unless($message->sender_id === $request->user()->id && $message->kind !== 'call', 403, 'You can only edit your own messages.');
+
+        $data = $request->validate(['body' => 'nullable|string|max:5000']);
+        abort_if(blank($data['body'] ?? null) && !$message->attachment_path, 422, 'Write something or attach a file.');
+
+        $message->forceFill(['body' => $data['body'] ?? null, 'edited_at' => now()])->save();
+        broadcast(new MessageSent($message))->toOthers();
+
+        return back()->with('success', 'Message updated.');
+    }
+
+    public function hideForMe(Request $request, Message $message) {
+        $this->authorizeView($request, $message);
+
+        DB::table('message_user_hides')->insertOrIgnore([
+            'message_id' => $message->id,
+            'user_id' => $request->user()->id,
+            'created_at' => now(),
+        ]);
+
+        return back()->with('success', 'Message removed from your chat.');
     }
 
     /**
