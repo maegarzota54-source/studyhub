@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import { Download, Eye, X } from 'lucide-react';
+import { BookOpen, Download, Eye, X } from 'lucide-react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
+import StudyGeneratorModal from '@/Components/StudyGeneratorModal';
 
 const size = (b) => (b ? (b > 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.ceil(b / 1e3) + ' KB') : '');
 
@@ -122,6 +123,7 @@ function PreviewModal({ item, onClose }) {
 
 export default function Files({ items, groups, filters }) {
   const [previewId, setPreviewId] = useState(null);
+  const [studyItem, setStudyItem] = useState(null);
   const previewItem = items.find((i) => i.id === previewId);
   const f = useForm({ kind: 'note', title: '', body: '', study_group_id: '', file: null });
   const filter = (k, v) => router.get(route('files.index'), { ...filters, [k]: v || undefined }, { preserveState: true });
@@ -150,16 +152,18 @@ export default function Files({ items, groups, filters }) {
       <Card className="divide-y divide-gray-100 p-0">
         {items.length === 0 && <p className="p-5 text-sm text-gray-500">Nothing here yet. Save a note or upload a file.</p>}
         {items.map((i) => (
-          <div key={i.id} className="flex items-center gap-3 px-5 py-3">
+          <div key={i.id} className="flex flex-wrap items-center gap-3 px-4 py-3 sm:flex-nowrap sm:px-5">
             <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{i.title}</p>
               <p className="text-xs text-gray-500">{i.kind} · {i.group?.title ?? 'Personal'} · {i.user.name} {size(i.size)}{i.message_id && <span className="ml-2 rounded bg-hunter-100 px-1.5 text-hunter-800">from chat</span>}</p></div>
             {(i.preview || i.body || i.path) && <button className="inline-flex items-center gap-1 text-sm text-hunter-700 hover:underline" onClick={() => setPreviewId(i.id)}><Eye size={14} /> Preview</button>}
+            {(i.body || i.path) && <button className="inline-flex items-center gap-1 text-sm font-medium text-hunter-700 hover:underline" onClick={() => setStudyItem(i)}><BookOpen size={14} /> Study</button>}
             {i.path && <a className="text-sm text-hunter-700 underline" href={route('files.download', i.id)}>Download</a>}
             <button className="text-sm text-raspberry-600" onClick={() => confirm('Delete?') && router.delete(route('files.destroy', i.id))}>Delete</button>
           </div>
         ))}
       </Card>
       {previewItem && <PreviewModal key={previewItem.id} item={previewItem} onClose={() => setPreviewId(null)} />}
+      {studyItem && <StudyGeneratorModal key={studyItem.id} item={studyItem} onClose={() => setStudyItem(null)} />}
     </AppLayout>
   );
 }

@@ -61,12 +61,12 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
                                 <ChatPanel threaded messages={messages} channel={`group.${group.id}`} postUrl={route('messages.group', group.id)} />
                             </div>
                             <div className="space-y-4 xl:col-span-2">
-                                <CallPanel targets={groupMembers.filter((m) => m.id !== me).map((m) => m.id)} people={groupMembers} />
+                                <CallPanel targets={groupMembers.filter((m) => m.id !== me).map((m) => m.id)} people={groupMembers} log={{ group_id: group.id }} />
                                 <SharedReader groupId={group.id} />
                             </div>
                         </div>
                     </>) : peer ? (<>
-                        <CallPanel targets={[peer.id]} people={[peer]} />
+                        <CallPanel targets={[peer.id]} people={[peer]} log={{ user_id: peer.id }} />
                         <ChatPanel messages={messages} channel={channel} postUrl={route('messages.direct', peer.id)} />
                     </>) : <p className="text-sm text-gray-500">Pick a study group or a student to start a conversation.</p>}
                 </div>
