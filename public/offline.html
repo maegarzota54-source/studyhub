@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081C15">
+  <title>You are offline · StudyHub</title>
+  <style>
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#081C15;color:#EBF2FA;font-family:system-ui,sans-serif;text-align:center;padding:24px}
+    img{width:96px;height:96px;border-radius:24px}
+    h1{margin:16px 0 8px;font-size:1.6rem}
+    p{margin:0 auto 24px;max-width:26rem;color:#9fc3b4;line-height:1.5}
+    button{background:#FBB02D;color:#081C15;border:0;border-radius:12px;padding:12px 24px;font-size:1rem;font-weight:700;cursor:pointer}
+    button:focus-visible{outline:3px solid #EBF2FA;outline-offset:3px}
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/icons/icon-192.png" alt="">
+    <h1>You are offline</h1>
+    <p>StudyHub needs an internet connection to load your circles, chats and tasks. Check your connection, then try again.</p>
+    <button onclick="location.reload()">Try again</button>
+  </main>
+</body>
+</html>

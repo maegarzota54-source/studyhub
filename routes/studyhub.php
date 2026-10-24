@@ -2,7 +2,7 @@
 // Add to the bottom of routes/web.php:  require __DIR__.'/studyhub.php';
 // (and remove Breeze's default '/dashboard' route to avoid a duplicate name)
 use App\Http\Controllers\{DashboardController, GroupController, MemberController, MessageController, NoteFileController,
-    ScheduleController, StudyGeneratorController, TaskController, ProgressController, NotificationController};
+    ScheduleController, StudyGeneratorController, TaskController, ProgressController, NotificationController, StoryController};
 use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +24,8 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::post('/messages/receipts', [MessageController::class, 'receipt'])->name('messages.receipts');
     Route::post('/messages/direct/{user}', [MessageController::class, 'storeDirect'])->name('messages.direct');
     Route::post('/groups/{group}/messages', [MessageController::class, 'storeGroup'])->name('messages.group');
+    Route::get('/messages/forward-targets', [MessageController::class, 'forwardTargets'])->name('messages.forward.targets');
+    Route::post('/messages/{message}/forward', [MessageController::class, 'forward'])->name('messages.forward');
     Route::post('/messages/{message}/save', [MessageController::class, 'saveToFiles'])->name('messages.save');
     Route::post('/messages/{message}/flag', [MessageController::class, 'flag'])->name('messages.flag');
     Route::post('/messages/{message}/reaction', [MessageController::class, 'react'])->name('messages.react');
@@ -34,10 +36,18 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
 
     Route::get('/files', [NoteFileController::class, 'index'])->name('files.index');
     Route::post('/files', [NoteFileController::class, 'store'])->name('files.store');
+    Route::post('/files/{file}/share', [MessageController::class, 'shareFile'])->name('files.share');
     Route::post('/files/{file}/study', [StudyGeneratorController::class, 'generate'])->name('files.study');
     Route::get('/files/{file}/preview', [NoteFileController::class, 'preview'])->name('files.preview');
     Route::get('/files/{file}/download', [NoteFileController::class, 'download'])->name('files.download');
     Route::delete('/files/{file}', [NoteFileController::class, 'destroy'])->name('files.destroy');
+
+    // Stories: a photo for 24 hours, shown to everyone, to chosen people, or only to you
+    Route::get('/stories', [StoryController::class, 'index'])->name('stories.index');
+    Route::post('/stories', [StoryController::class, 'store'])->name('stories.store');
+    Route::get('/stories/{story}/image', [StoryController::class, 'image'])->name('stories.image');
+    Route::post('/stories/{story}/view', [StoryController::class, 'markViewed'])->name('stories.view');
+    Route::delete('/stories/{story}', [StoryController::class, 'destroy'])->name('stories.destroy');
 
     Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule.index');
     Route::post('/schedule', [ScheduleController::class, 'store'])->name('schedule.store');

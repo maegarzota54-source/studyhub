@@ -40,6 +40,8 @@ export default function Schedule({ month, events, groups }) {
         <div className="space-y-6">
         <Card>
           <h2 className="mb-3 font-semibold">Study sessions</h2>
+          
+          <a href={route('schedule.export')} className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-semibold hover:bg-black/5">Download calendar (.ics)</a>
           <div className="space-y-3">
             {open.length === 0 && <p className="text-sm text-gray-500">No upcoming sessions this month.</p>}
             {open.map((e) => <SessionCard key={e.id} event={e} me={me} people={groups.find((g) => g.id === e.study_group_id)?.members ?? []} />)}

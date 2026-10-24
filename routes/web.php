@@ -25,3 +25,7 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 require __DIR__.'/studyhub-live.php';   // must be before studyhub.php
 require __DIR__.'/studyhub.php';
+require __DIR__.'/auth.php';
+require __DIR__.'/studyhub-live.php';
+require __DIR__.'/studyhub-chat.php';   // NEW
+require __DIR__.'/studyhub.php';

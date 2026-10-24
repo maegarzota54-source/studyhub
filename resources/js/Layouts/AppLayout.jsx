@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
-import { Bell, BookOpen, CalendarDays, CheckSquare, Contact, FolderOpen, LayoutDashboard, LineChart, Menu, MessageSquare, Search, Shield, Users, X } from 'lucide-react';
+import { Bell, BookOpen, CalendarDays, Camera, CheckSquare, Contact, FolderOpen, LayoutDashboard, LineChart, Menu, MessageSquare, Search, Shield, Users, X } from 'lucide-react';
 import CallOverlay from '@/Components/CallOverlay';
 import { init as initCalls } from '@/lib/callManager';
 import { setEcho, startHeartbeat } from '@/lib/presence';
 
 const NAV = [
   ['Dashboard', 'dashboard', LayoutDashboard], ['Find Groups', 'groups.find', Search], ['My Groups', 'groups.index', Users], ['Members', 'members.index', Contact],
-  ['Messages', 'messages.index', MessageSquare], ['Notes & Files', 'files.index', FolderOpen], ['Schedule', 'schedule.index', CalendarDays],
+  ['Messages', 'messages.index', MessageSquare], ['Stories', 'stories.index', Camera], ['Notes & Files', 'files.index', FolderOpen], ['Schedule', 'schedule.index', CalendarDays],
   ['Tasks', 'tasks.index', CheckSquare], ['Progress', 'progress.index', LineChart]
 ];
 

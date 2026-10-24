@@ -13,6 +13,14 @@ use Inertia\Inertia;
 
 class MessageController extends Controller
 {
+    /** Voice clips are stored and served only with one of these extensions / audio types. */
+    private const VOICE_MIMES = ['webm' => 'audio/webm', 'm4a' => 'audio/mp4', 'ogg' => 'audio/ogg'];
+
+    private static function voiceExt(?string $mime): string {
+        $mime = strtolower((string) $mime);
+        return str_contains($mime, 'mp4') || str_contains($mime, 'aac') ? 'm4a' : (str_contains($mime, 'ogg') ? 'ogg' : 'webm');
+    }
+
     /** Students you share at least one circle with. */
     private function contacts(User $u) {
         $groupIds = $u->groups()->pluck('study_groups.id');
@@ -32,7 +40,7 @@ class MessageController extends Controller
             ->keyBy(fn ($m) => $m->sender_id === $u->id ? $m->recipient_id : $m->sender_id);
         $contacts = $contacts->each(function ($c) use ($last) {
             $m = $last->get($c->id);
-            $c->last_message = $m ? ($m->body ? Str::limit($m->body, 40) : '📎 '.$m->attachment_name) : null;
+            $c->last_message = $m ? ($m->body ? Str::limit($m->body, 40) : ($m->voice_seconds !== null ? '🎤 Voice message' : '📎 '.$m->attachment_name)) : null;
             $c->last_at = $m?->created_at;
         })->sortByDesc(fn ($c) => $c->last_at?->timestamp ?? 0)->values();
         $peer = $request->user_id ? $contacts->firstWhere('id', (int) $request->user_id) : null;
@@ -60,19 +68,29 @@ class MessageController extends Controller
         $data = $request->validate([
             'body' => 'nullable|string|max:5000', 'parent_id' => 'nullable|exists:messages,id',
             'kind' => 'nullable|in:message,comment,answer,suggestion',
-            'attachment' => 'nullable|file|max:20480',
+            'attachment' => 'nullable|file|max:20480', 'voice_seconds' => 'nullable|integer|min:0|max:600',
         ]);
         abort_if(blank($data['body'] ?? null) && !$request->hasFile('attachment'), 422, 'Write something or attach a file.');
+        $voice = isset($data['voice_seconds']) && $request->hasFile('attachment');   // a recorded voice clip
         $m = new Message($extra + ['sender_id' => $request->user()->id, 'body' => $data['body'] ?? null,
             'parent_id' => $data['parent_id'] ?? null, 'kind' => $data['kind'] ?? 'message']);
         if ($f = $request->file('attachment')) {
-            $m->attachment_path = $f->store('attachments');            // private (local) disk
-            $m->attachment_name = $f->getClientOriginalName();
-            $m->attachment_mime = $f->getClientMimeType();
+            if ($voice) {
+                // Voice clips get a fixed, known extension so they can only ever be served back as audio.
+                $ext = self::voiceExt($f->getClientMimeType());
+                $m->attachment_path = $f->storeAs('attachments', Str::uuid().'.'.$ext);
+                $m->attachment_name = 'Voice message.'.$ext;
+                $m->attachment_mime = self::VOICE_MIMES[$ext];
+                $m->voice_seconds = (int) $data['voice_seconds'];
+            } else {
+                $m->attachment_path = $f->store('attachments');        // private (local) disk
+                $m->attachment_name = $f->getClientOriginalName();
+                $m->attachment_mime = $f->getClientMimeType();
+            }
             $m->attachment_size = $f->getSize();
         }
         $m->save();
-        if ($m->attachment_path) $this->autoSave($m);   // Phase 2: attachments land in Notes & Files automatically
+        if ($m->attachment_path && !$voice) $this->autoSave($m);   // Phase 2: files land in Notes & Files (voice clips don't)
         broadcast(new MessageSent($m))->toOthers();
         return $m;
     }
@@ -165,7 +183,92 @@ class MessageController extends Controller
     public function attachment(Request $request, Message $message) {
         $this->authorizeView($request, $message);
         abort_unless($message->attachment_path, 404);
+        if ($request->boolean('inline') && $message->voice_seconds !== null) {
+            $mime = self::VOICE_MIMES[strtolower(pathinfo($message->attachment_path, PATHINFO_EXTENSION))] ?? null;
+            abort_unless($mime && Storage::exists($message->attachment_path), 404);
+            // response()->file() supports Range requests, which Safari needs to play audio.
+            return response()->file(Storage::path($message->attachment_path), [
+                'Content-Type' => $mime, 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'private, max-age=3600',
+            ]);
+        }
         return Storage::download($message->attachment_path, $message->attachment_name);
+    }
+
+
+    /** Chats the current user can forward / share into: students in their circles + their study groups. */
+    public function forwardTargets(Request $request) {
+        $u = $request->user();
+        return response()->json([
+            'users' => $this->contacts($u)->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'avatar_url' => $c->avatar_url])->values(),
+            'groups' => $u->groups()->orderBy('study_groups.title')->get(['study_groups.id', 'study_groups.title'])
+                ->map(fn ($g) => ['id' => $g->id, 'title' => $g->title])->values(),
+        ]);
+    }
+
+    /** Validates the chosen destinations and makes sure the sender is really allowed to message each one. */
+    private function resolveTargets(Request $request): array {
+        $u = $request->user();
+        $d = $request->validate([
+            'user_ids' => 'nullable|array|max:10', 'user_ids.*' => 'integer|exists:users,id',
+            'group_ids' => 'nullable|array|max:10', 'group_ids.*' => 'integer|exists:study_groups,id',
+        ]);
+        $userIds = collect($d['user_ids'] ?? [])->map(fn ($id) => (int) $id)->unique()->values();
+        $groups = StudyGroup::whereIn('id', collect($d['group_ids'] ?? [])->unique())->get();
+        abort_if($userIds->isEmpty() && $groups->isEmpty(), 422, 'Pick at least one chat.');
+        $contactIds = $this->contacts($u)->pluck('id');
+        abort_unless($userIds->every(fn ($id) => $contactIds->contains($id)), 403, 'You can only message students in your circles.');
+        abort_unless($groups->every(fn ($g) => $g->hasMember($u)), 403, 'You can only send to groups you belong to.');
+        return [$userIds, $groups];
+    }
+
+    /** Creates one new message per destination. Every attachment gets its own physical copy. */
+    private function deliver(User $u, ?string $body, ?array $att, $userIds, $groups, bool $forwarded, bool $autoSave, ?int $voice = null): int {
+        if ($att) abort_unless(Storage::exists($att['path']), 404, 'That file is no longer available.');
+        $wheres = $userIds->map(fn ($id) => ['recipient_id' => $id])->concat($groups->map(fn ($g) => ['study_group_id' => $g->id]));
+        foreach ($wheres as $where) {
+            $m = new Message($where + ['sender_id' => $u->id, 'kind' => 'message', 'body' => $body, 'is_forwarded' => $forwarded, 'voice_seconds' => $voice]);
+            if ($att) {
+                $copy = 'attachments/'.Str::uuid().'_'.basename($att['path']);
+                Storage::copy($att['path'], $copy);
+                $m->attachment_path = $copy; $m->attachment_name = $att['name'];
+                $m->attachment_mime = $att['mime']; $m->attachment_size = $att['size'];
+            }
+            $m->save();
+            if ($att && $autoSave) $this->autoSave($m);
+            broadcast(new MessageSent($m))->toOthers();
+            if (isset($where['recipient_id'])) {
+                User::find($where['recipient_id'])?->notify(new StudyHubNotice("New message from {$u->name}", route('messages.index', ['user_id' => $u->id], false)));
+            }
+        }
+        return $wheres->count();
+    }
+
+    /** Forward a message (text, file or voice clip) to other chats. */
+    public function forward(Request $request, Message $message) {
+        $this->authorizeView($request, $message);
+        abort_if($message->kind === 'call', 422, 'Call notes can’t be forwarded.');
+        [$userIds, $groups] = $this->resolveTargets($request);
+        $att = $message->attachment_path ? ['path' => $message->attachment_path, 'name' => $message->attachment_name,
+            'mime' => $message->attachment_mime, 'size' => $message->attachment_size] : null;
+        $count = $this->deliver($request->user(), $message->body, $att, $userIds, $groups, true, true, $message->voice_seconds);
+        return response()->json(['ok' => true, 'count' => $count]);
+    }
+
+    /** Share a file or note from Notes & Files into chats. */
+    public function shareFile(Request $request, NoteFile $file) {
+        $u = $request->user();
+        abort_unless(NoteFile::visibleTo($u)->whereKey($file->id)->exists(), 403);
+        [$userIds, $groups] = $this->resolveTargets($request);
+        $att = null; $body = null;
+        if ($file->path) {
+            $ext = strtolower(pathinfo($file->path, PATHINFO_EXTENSION));
+            $name = ($ext && !Str::endsWith(strtolower($file->title), '.'.$ext)) ? $file->title.'.'.$ext : $file->title;
+            $att = ['path' => $file->path, 'name' => $name, 'mime' => $file->mime, 'size' => $file->size];
+        } else {
+            $body = Str::limit(trim($file->title."\n\n".$file->body), 4900);
+        }
+        $count = $this->deliver($u, $body, $att, $userIds, $groups, false, false);
+        return response()->json(['ok' => true, 'count' => $count]);
     }
 
     public function react(Request $request, Message $message) {

@@ -11,6 +11,11 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
+         @routes:
+        <link rel="manifest" href="/manifest.webmanifest">
+        <meta name="theme-color" content="#081C15">
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+        
         @routes
         @viteReactRefresh
         @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])

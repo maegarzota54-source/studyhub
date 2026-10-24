@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowRight, Camera, Check, ChevronUp, GraduationCap, ImagePlus, Plus, Users } from 'lucide-react';
+import { ArrowRight, Camera, Check, GraduationCap, ImagePlus, Plus, Sparkles, Users, X } from 'lucide-react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
-import { ActiveAvatars, ActiveBadge, GroupCover } from '@/Components/GroupBits';
+import { ActiveBadge, ActivePeople, GroupCover } from '@/Components/GroupBits';
 
 /* ------------------------------------------------------------------ create form (with picture) */
-function CreateGroup({ onMinimize }) {
+function CreateGroup() {
     const f = useForm({ title: '', topic: '', description: '', target_date: '', skill_level: 'beginner', mode: 'online', max_members: 10, cover: null });
     const set = (k) => (e) => f.setData(k, e.target.value);
     const err = (k) => f.errors[k] && <p className="mt-1 text-xs text-[#C81E51]">{f.errors[k]}</p>;
@@ -14,14 +14,8 @@ function CreateGroup({ onMinimize }) {
 
     return (
         <Card>
-            <div className="mb-3 flex items-center justify-between gap-3">
-                <h2 className="flex items-center gap-2 font-semibold"><Plus size={18} aria-hidden="true" /> Create a study circle</h2>
-                <button type="button" onClick={onMinimize} aria-controls="create-study-circle-form"
-                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-[#081C15] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#038666]">
-                    <ChevronUp size={16} aria-hidden="true" /> Minimize
-                </button>
-            </div>
-            <form id="create-study-circle-form" onSubmit={(e) => { e.preventDefault(); f.post(route('groups.store'), { forceFormData: true }); }} className="grid gap-3 md:grid-cols-2">
+            <h2 className="mb-3 flex items-center gap-2 font-semibold"><Plus size={18} aria-hidden="true" /> Create a study circle</h2>
+            <form onSubmit={(e) => { e.preventDefault(); f.post(route('groups.store'), { forceFormData: true }); }} className="grid gap-3 md:grid-cols-2">
                 <div><label className={label} htmlFor="g-title">Group title</label><input id="g-title" className={inputCls} value={f.data.title} onChange={set('title')} />{err('title')}</div>
                 <div><label className={label} htmlFor="g-topic">Topic of study</label><input id="g-topic" className={inputCls} value={f.data.topic} onChange={set('topic')} />{err('topic')}</div>
                 <div><label className={label} htmlFor="g-date">Target date</label><input id="g-date" type="date" className={inputCls} value={f.data.target_date} onChange={set('target_date')} />{err('target_date')}</div>
@@ -72,6 +66,11 @@ function FindCard({ g }) {
             </GroupCover>
             <div className="p-4">
                 {g.description && <p className="mb-3 line-clamp-2 text-sm">{g.description}</p>}
+                {g.why?.length > 0 && (
+                    <div className="mb-3 flex flex-wrap gap-1.5" aria-label="Why this is suggested">
+                        {g.why.map((w) => <span key={w} className="rounded-full bg-[#038666]/15 px-2 py-0.5 text-[11px] font-semibold text-[#025f48]">{w}</span>)}
+                    </div>
+                )}
                 <div className="flex items-center gap-2" aria-label="Members who joined">
                     <div className="flex -space-x-2">
                         {members.slice(0, 5).map((m) => <img key={m.id} src={m.avatar_url} title={m.name} alt={m.name} className="h-7 w-7 rounded-full border-2 border-white object-cover" />)}
@@ -101,71 +100,77 @@ function MineCard({ g }) {
     const admin = g.pivot?.role === 'admin';
     const upload = (e) => { const file = e.target.files[0]; if (file) router.post(route('groups.cover', g.id), { cover: file }, { forceFormData: true, preserveScroll: true }); };
     return (
-        <article className="relative overflow-hidden rounded-xl border border-gray-200 bg-white">
-            <Link href={route('groups.show', g.id)} aria-label={`Open ${g.title} group chat`}
-                className="block transition-all hover:-translate-y-1 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#038666]">
-                <GroupCover group={g} className="h-28">
-                    <div className="absolute left-2 top-2"><ActiveAvatars groupId={g.id} /></div>
-                    <div className={`absolute top-2 ${admin ? 'right-12' : 'right-2'}`}>
-                        <ActiveBadge groupId={g.id} onCover />
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 p-3 text-white"><h3 className="truncate font-bold">{g.title}</h3><p className="truncate text-xs text-white/80">{g.topic}</p></div>
-                </GroupCover>
-                <div className="flex items-center justify-between p-4">
-                    <span className="flex items-center gap-1 text-xs text-gray-500"><Users size={13} aria-hidden="true" /> {g.members_count}/{g.max_members} members{admin && ' · admin'}</span>
-                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#038666] px-4 py-2 text-sm font-semibold text-white">
-                        <Check size={15} aria-hidden="true" /> Joined <ArrowRight size={14} aria-hidden="true" />
-                    </span>
+        <article className="overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:-translate-y-1 hover:shadow-xl">
+            <GroupCover group={g} className="h-28">
+                <div className="absolute right-2 top-2 flex items-center gap-1.5">
+                    <ActiveBadge groupId={g.id} onCover />
+                    {admin && <label className="cursor-pointer rounded-full bg-[#081C15]/70 p-1.5 text-white hover:bg-[#081C15]" title="Change group picture"><Camera size={14} /><input type="file" accept="image/*" className="sr-only" onChange={upload} /></label>}
                 </div>
-            </Link>
-            {admin && (
-                <label className="absolute right-2 top-2 z-20 cursor-pointer rounded-full bg-[#081C15]/70 p-1.5 text-white hover:bg-[#081C15]"
-                    title="Change group picture" aria-label={`Change ${g.title} group picture`} onClick={(e) => e.stopPropagation()}>
-                    <Camera size={14} />
-                    <input type="file" accept="image/*" className="sr-only" onChange={upload} />
-                </label>
-            )}
+                <div className="absolute inset-x-0 bottom-0 p-3 text-white"><h3 className="truncate font-bold">{g.title}</h3><p className="truncate text-xs text-white/80">{g.topic}</p></div>
+            </GroupCover>
+            <div className="px-4 pt-3"><ActivePeople groupId={g.id} /></div>
+            <div className="flex items-center justify-between p-4">
+                <span className="flex items-center gap-1 text-xs text-gray-500"><Users size={13} aria-hidden="true" /> {g.members_count}/{g.max_members} members{admin && ' · admin'}</span>
+                <Link href={route('groups.show', g.id)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#FBB02D] px-4 py-2 text-sm font-semibold text-[#081C15] transition-all hover:brightness-95 active:scale-95">Open <ArrowRight size={14} /></Link>
+            </div>
         </article>
     );
 }
 
 /* ------------------------------------------------------------------ page */
-export default function GroupsIndex({ mode, groups, filters = {} }) {
+function FilterSelect({ label, value, onChange, options }) {
+    return (
+        <select aria-label={label} value={value ?? ''} onChange={(e) => onChange(e.target.value)}
+            className={`rounded-full border px-3 py-2 text-sm font-medium focus:outline-none ${value ? 'border-[#FBB02D] bg-[#FBB02D] text-[#081C15]' : 'border-[#EBF2FA]/30 bg-transparent text-[#EBF2FA]'}`}>
+            {options.map(([v, t]) => <option key={v} value={v} className="text-black">{t}</option>)}
+        </select>
+    );
+}
+
+export default function GroupsIndex({ mode, groups, filters = {}, topics = [], suggested = [] }) {
     const list = groups.data ?? groups;
     const [q, setQ] = useState(filters.q ?? '');
-    const [createExpanded, setCreateExpanded] = useState(false);
-    const go = (extra = {}) => router.get(route('groups.find'), { q: q || undefined, recommended: filters.recommended || undefined, ...extra }, { preserveState: true });
+    const apply = (next = {}) => {
+        const merged = { ...filters, q: q || undefined, ...next };
+        router.get(route('groups.find'), Object.fromEntries(Object.entries(merged).filter(([, v]) => v !== undefined && v !== null && v !== '')), { preserveState: true });
+    };
+    const anyFilter = Object.values(filters).some(Boolean);
 
     return (
         <AppLayout title={mode === 'find' ? 'Find Study Groups' : 'My Study Circles'}>
             <Head title="Groups" />
             {mode === 'find' ? (
-                <div className="mb-4 flex flex-wrap items-center gap-2">
-                    <form onSubmit={(e) => { e.preventDefault(); go(); }} className="flex min-w-[16rem] flex-1 gap-2">
-                        <input className={inputCls} placeholder="Search by title or topic" value={q} onChange={(e) => setQ(e.target.value)} />
-                        <Btn>Search</Btn>
-                    </form>
-                    <button onClick={() => go({ recommended: filters.recommended ? undefined : 1 })} aria-pressed={!!filters.recommended}
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${filters.recommended ? 'border-[#FBB02D] bg-[#FBB02D] text-[#081C15]' : 'border-[#EBF2FA]/30 text-[#EBF2FA] hover:bg-white/10'}`}>
-                        <GraduationCap size={15} aria-hidden="true" /> Recommended by my teacher
-                    </button>
-                </div>
-            ) : (
-                <div className="mb-6">
-                    {!createExpanded && (
-                        <button type="button" onClick={() => setCreateExpanded(true)} aria-expanded="false" aria-controls="create-study-circle-panel"
-                            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-[#081C15] shadow-sm transition-colors hover:border-[#038666] hover:bg-[#038666]/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#038666]">
-                            <Plus size={18} aria-hidden="true" /> Create a study circle
+                <div className="mb-5 space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <form onSubmit={(e) => { e.preventDefault(); apply(); }} className="flex min-w-[16rem] flex-1 gap-2">
+                            <input className={inputCls} placeholder="Search by title or topic" value={q} onChange={(e) => setQ(e.target.value)} />
+                            <Btn>Search</Btn>
+                        </form>
+                        <button onClick={() => apply({ recommended: filters.recommended ? undefined : 1 })} aria-pressed={!!filters.recommended}
+                            className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${filters.recommended ? 'border-[#FBB02D] bg-[#FBB02D] text-[#081C15]' : 'border-[#EBF2FA]/30 text-[#EBF2FA] hover:bg-white/10'}`}>
+                            <GraduationCap size={15} aria-hidden="true" /> Recommended by my teacher
                         </button>
-                    )}
-                    <div id="create-study-circle-panel" className={createExpanded ? '' : 'hidden'}>
-                        <CreateGroup onMinimize={() => setCreateExpanded(false)} />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filters">
+                        <FilterSelect label="Subject" value={filters.topic} onChange={(v) => apply({ topic: v })} options={[['', 'Any subject'], ...topics.map((t) => [t, t])]} />
+                        <FilterSelect label="Skill level" value={filters.skill_level} onChange={(v) => apply({ skill_level: v })} options={[['', 'Any level'], ['beginner', 'Beginner'], ['intermediate', 'Intermediate'], ['advanced', 'Advanced']]} />
+                        <FilterSelect label="Study mode" value={filters.mode} onChange={(v) => apply({ mode: v })} options={[['', 'Online or in person'], ['online', 'Online'], ['in-person', 'In person']]} />
+                        <FilterSelect label="Schedule" value={filters.schedule} onChange={(v) => apply({ schedule: v })} options={[['', 'Any schedule'], ['week', 'Has a session this week']]} />
+                        {anyFilter && <button onClick={() => { setQ(''); router.get(route('groups.find')); }} className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm text-[#EBF2FA]/80 underline hover:text-white"><X size={14} /> Clear filters</button>}
                     </div>
                 </div>
+            ) : <div className="mb-6"><CreateGroup /></div>}
+
+            {mode === 'find' && suggested.length > 0 && (
+                <section className="mb-8" aria-label="Suggested for you">
+                    <h2 className="mb-3 flex items-center gap-2 text-lg font-bold"><Sparkles size={18} color="#FBB02D" aria-hidden="true" /> Suggested for you</h2>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{suggested.map((g) => <FindCard key={`s${g.id}`} g={g} />)}</div>
+                    <h2 className="mb-1 mt-8 text-lg font-bold">All study groups</h2>
+                </section>
             )}
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {list.length === 0 && <p className="text-sm text-gray-500">{mode === 'find' ? 'No circles match. Try another topic.' : "You haven't joined a circle yet."}</p>}
+                {list.length === 0 && <p className="text-sm text-gray-500">{mode === 'find' ? 'No circles match. Try another subject or clear the filters.' : "You haven't joined a circle yet."}</p>}
                 {list.map((g) => (mode === 'find' ? <FindCard key={g.id} g={g} /> : <MineCard key={g.id} g={g} />))}
             </div>
 

@@ -18,6 +18,12 @@ class User extends Authenticatable
     }
     public function isAdmin(): bool { return $this->role === 'admin'; }
     public function groups() { return $this->belongsToMany(StudyGroup::class, 'group_members')->withPivot('role')->withTimestamps(); }
+    /** Students who share at least one circle with this user. */
+    public function circleMates() {
+        $groupIds = $this->groups()->pluck('study_groups.id');
+        return static::whereIn('id', \Illuminate\Support\Facades\DB::table('group_members')->whereIn('study_group_id', $groupIds)->pluck('user_id'))
+            ->where('id', '!=', $this->id)->orderBy('name')->get(['id', 'name', 'avatar']);
+    }
     public function studySessions() { return $this->hasMany(StudySession::class); }
     /**
      * Phase 1: avatars are served by the app itself (route profile.avatar), so nobody has to run
