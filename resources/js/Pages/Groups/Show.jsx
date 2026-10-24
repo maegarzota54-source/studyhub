@@ -8,10 +8,7 @@ import FilePreviewModal from '@/Components/FilePreviewModal';
 import OnlineDot from '@/Components/OnlineDot';
 import SharedReader from '@/Components/SharedReader';
 import SessionCard from '@/Components/SessionCard';
-<<<<<<< HEAD
-=======
 import StudyGeneratorModal from '@/Components/StudyGeneratorModal';
->>>>>>> develop
 
 export default function GroupShow({ group, isGroupAdmin, members, messages, modules, tasks, events, auth }) {
   const [tab, setTab] = useState('chat');
