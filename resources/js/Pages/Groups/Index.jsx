@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowRight, Camera, Check, GraduationCap, ImagePlus, Plus, Users } from 'lucide-react';
+import { ArrowRight, Camera, Check, ChevronUp, GraduationCap, ImagePlus, Plus, Users } from 'lucide-react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
-import { ActiveBadge, GroupCover } from '@/Components/GroupBits';
+import { ActiveAvatars, ActiveBadge, GroupCover } from '@/Components/GroupBits';
 
 /* ------------------------------------------------------------------ create form (with picture) */
-function CreateGroup() {
+function CreateGroup({ onMinimize }) {
     const f = useForm({ title: '', topic: '', description: '', target_date: '', skill_level: 'beginner', mode: 'online', max_members: 10, cover: null });
     const set = (k) => (e) => f.setData(k, e.target.value);
     const err = (k) => f.errors[k] && <p className="mt-1 text-xs text-[#C81E51]">{f.errors[k]}</p>;
@@ -14,8 +14,14 @@ function CreateGroup() {
 
     return (
         <Card>
-            <h2 className="mb-3 flex items-center gap-2 font-semibold"><Plus size={18} aria-hidden="true" /> Create a study circle</h2>
-            <form onSubmit={(e) => { e.preventDefault(); f.post(route('groups.store'), { forceFormData: true }); }} className="grid gap-3 md:grid-cols-2">
+            <div className="mb-3 flex items-center justify-between gap-3">
+                <h2 className="flex items-center gap-2 font-semibold"><Plus size={18} aria-hidden="true" /> Create a study circle</h2>
+                <button type="button" onClick={onMinimize} aria-controls="create-study-circle-form"
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-[#081C15] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#038666]">
+                    <ChevronUp size={16} aria-hidden="true" /> Minimize
+                </button>
+            </div>
+            <form id="create-study-circle-form" onSubmit={(e) => { e.preventDefault(); f.post(route('groups.store'), { forceFormData: true }); }} className="grid gap-3 md:grid-cols-2">
                 <div><label className={label} htmlFor="g-title">Group title</label><input id="g-title" className={inputCls} value={f.data.title} onChange={set('title')} />{err('title')}</div>
                 <div><label className={label} htmlFor="g-topic">Topic of study</label><input id="g-topic" className={inputCls} value={f.data.topic} onChange={set('topic')} />{err('topic')}</div>
                 <div><label className={label} htmlFor="g-date">Target date</label><input id="g-date" type="date" className={inputCls} value={f.data.target_date} onChange={set('target_date')} />{err('target_date')}</div>
@@ -95,18 +101,30 @@ function MineCard({ g }) {
     const admin = g.pivot?.role === 'admin';
     const upload = (e) => { const file = e.target.files[0]; if (file) router.post(route('groups.cover', g.id), { cover: file }, { forceFormData: true, preserveScroll: true }); };
     return (
-        <article className="overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:-translate-y-1 hover:shadow-xl">
-            <GroupCover group={g} className="h-28">
-                <div className="absolute right-2 top-2 flex items-center gap-1.5">
-                    <ActiveBadge groupId={g.id} onCover />
-                    {admin && <label className="cursor-pointer rounded-full bg-[#081C15]/70 p-1.5 text-white hover:bg-[#081C15]" title="Change group picture"><Camera size={14} /><input type="file" accept="image/*" className="sr-only" onChange={upload} /></label>}
+        <article className="relative overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <Link href={route('groups.show', g.id)} aria-label={`Open ${g.title} group chat`}
+                className="block transition-all hover:-translate-y-1 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#038666]">
+                <GroupCover group={g} className="h-28">
+                    <div className="absolute left-2 top-2"><ActiveAvatars groupId={g.id} /></div>
+                    <div className={`absolute top-2 ${admin ? 'right-12' : 'right-2'}`}>
+                        <ActiveBadge groupId={g.id} onCover />
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 p-3 text-white"><h3 className="truncate font-bold">{g.title}</h3><p className="truncate text-xs text-white/80">{g.topic}</p></div>
+                </GroupCover>
+                <div className="flex items-center justify-between p-4">
+                    <span className="flex items-center gap-1 text-xs text-gray-500"><Users size={13} aria-hidden="true" /> {g.members_count}/{g.max_members} members{admin && ' · admin'}</span>
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#038666] px-4 py-2 text-sm font-semibold text-white">
+                        <Check size={15} aria-hidden="true" /> Joined <ArrowRight size={14} aria-hidden="true" />
+                    </span>
                 </div>
-                <div className="absolute inset-x-0 bottom-0 p-3 text-white"><h3 className="truncate font-bold">{g.title}</h3><p className="truncate text-xs text-white/80">{g.topic}</p></div>
-            </GroupCover>
-            <div className="flex items-center justify-between p-4">
-                <span className="flex items-center gap-1 text-xs text-gray-500"><Users size={13} aria-hidden="true" /> {g.members_count}/{g.max_members} members{admin && ' · admin'}</span>
-                <Link href={route('groups.show', g.id)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#FBB02D] px-4 py-2 text-sm font-semibold text-[#081C15] transition-all hover:brightness-95 active:scale-95">Open <ArrowRight size={14} /></Link>
-            </div>
+            </Link>
+            {admin && (
+                <label className="absolute right-2 top-2 z-20 cursor-pointer rounded-full bg-[#081C15]/70 p-1.5 text-white hover:bg-[#081C15]"
+                    title="Change group picture" aria-label={`Change ${g.title} group picture`} onClick={(e) => e.stopPropagation()}>
+                    <Camera size={14} />
+                    <input type="file" accept="image/*" className="sr-only" onChange={upload} />
+                </label>
+            )}
         </article>
     );
 }
@@ -115,6 +133,7 @@ function MineCard({ g }) {
 export default function GroupsIndex({ mode, groups, filters = {} }) {
     const list = groups.data ?? groups;
     const [q, setQ] = useState(filters.q ?? '');
+    const [createExpanded, setCreateExpanded] = useState(false);
     const go = (extra = {}) => router.get(route('groups.find'), { q: q || undefined, recommended: filters.recommended || undefined, ...extra }, { preserveState: true });
 
     return (
@@ -131,7 +150,19 @@ export default function GroupsIndex({ mode, groups, filters = {} }) {
                         <GraduationCap size={15} aria-hidden="true" /> Recommended by my teacher
                     </button>
                 </div>
-            ) : <div className="mb-6"><CreateGroup /></div>}
+            ) : (
+                <div className="mb-6">
+                    {!createExpanded && (
+                        <button type="button" onClick={() => setCreateExpanded(true)} aria-expanded="false" aria-controls="create-study-circle-panel"
+                            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-[#081C15] shadow-sm transition-colors hover:border-[#038666] hover:bg-[#038666]/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#038666]">
+                            <Plus size={18} aria-hidden="true" /> Create a study circle
+                        </button>
+                    )}
+                    <div id="create-study-circle-panel" className={createExpanded ? '' : 'hidden'}>
+                        <CreateGroup onMinimize={() => setCreateExpanded(false)} />
+                    </div>
+                </div>
+            )}
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {list.length === 0 && <p className="text-sm text-gray-500">{mode === 'find' ? 'No circles match. Try another topic.' : "You haven't joined a circle yet."}</p>}

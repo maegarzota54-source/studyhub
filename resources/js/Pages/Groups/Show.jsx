@@ -1,20 +1,28 @@
 import { useEffect, useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { MessageSquare } from 'lucide-react';
+import { BookOpen, Eye, MessageSquare } from 'lucide-react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
 import ChatPanel from '@/Components/ChatPanel';
 import CallPanel from '@/Components/CallPanel';
+import FilePreviewModal from '@/Components/FilePreviewModal';
 import OnlineDot from '@/Components/OnlineDot';
 import SharedReader from '@/Components/SharedReader';
 import SessionCard from '@/Components/SessionCard';
+<<<<<<< HEAD
+=======
+import StudyGeneratorModal from '@/Components/StudyGeneratorModal';
+>>>>>>> develop
 
 export default function GroupShow({ group, isGroupAdmin, members, messages, modules, tasks, events, auth }) {
   const [tab, setTab] = useState('chat');
+  const [previewModuleId, setPreviewModuleId] = useState(null);
+  const [studyModule, setStudyModule] = useState(null);
   const me = auth.user;
   const [, tick] = useState(0);
   useEffect(() => { const f = () => tick((n) => n + 1); window.addEventListener('presence', f); return () => window.removeEventListener('presence', f); }, []);
   const isOn = (id) => id === me.id || window.__online?.has(id);
-  const onlineList = members.filter((m) => isOn(m.id)), offlineList = members.filter((m) => !isOn(m.id));
+  const otherMembers = members.filter((m) => m.id !== me.id);
+  const onlineList = otherMembers.filter((m) => isOn(m.id)), offlineList = otherMembers.filter((m) => !isOn(m.id));
   const mod = useForm({ kind: 'module', title: '', body: '', study_group_id: group.id, file: null });
 
   return (
@@ -85,8 +93,52 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
             </form>
           </Card>
           {modules.map((m) => (
-            <Card key={m.id}><b>{m.title}</b> <span className="text-xs text-gray-500">by {m.user.name}</span><p className="text-sm">{m.body}</p>
-              {m.path && <a className="text-sm text-raspberry-600 underline" href={route('files.download', m.id)}>Download</a>}</Card>
+            <Card key={m.id}>
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <b>{m.title}</b> <span className="text-xs text-gray-500">by {m.user.name}</span>
+                    {m.body && <p className="mt-1 whitespace-pre-wrap text-sm">{m.body}</p>}
+                  </div>
+                  {(m.path || m.body) && (
+                    <div className="flex shrink-0 gap-3 text-sm">
+                      <button
+                        type="button"
+                        onClick={() => setStudyModule(m)}
+                        className="inline-flex items-center gap-1 text-hunter-700 hover:underline"
+                      >
+                        <BookOpen size={14} /> Study
+                      </button>
+                      {m.path && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setPreviewModuleId(m.id)}
+                            className="inline-flex items-center gap-1 text-hunter-700 hover:underline"
+                          >
+                            <Eye size={14} /> Preview
+                          </button>
+                          <a className="text-raspberry-600 underline" href={route('files.download', m.id)}>Download</a>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {previewModuleId === m.id && (
+                  <FilePreviewModal
+                    item={{ ...m, preview_url: route('files.preview', m.id) }}
+                    downloadUrl={route('files.download', m.id)}
+                    onClose={() => setPreviewModuleId(null)}
+                  />
+                )}
+                {studyModule?.id === m.id && (
+                  <StudyGeneratorModal
+                    item={studyModule}
+                    onClose={() => setStudyModule(null)}
+                  />
+                )}
+              </div>
+            </Card>
           ))}
         </div>
       )}

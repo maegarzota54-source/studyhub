@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{Message, NoteFile, Schedule, StudyGroup, Task};
 use App\Notifications\StudyHubNotice;
+use App\Support\ChatReadReceipts;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,6 +21,7 @@ class GroupController extends Controller
         $u = $request->user();
         $groups = StudyGroup::query()->withCount('members')
             ->withExists(['members as is_member' => fn ($q) => $q->whereKey($u->id)])
+            ->whereDoesntHave('members', fn ($q) => $q->whereKey($u->id))
             ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))
             ->when($request->skill_level, fn ($q, $v) => $q->where('skill_level', $v))
             ->when($request->mode, fn ($q, $v) => $q->where('mode', $v))
@@ -49,9 +51,22 @@ class GroupController extends Controller
         $u = $request->user();
         abort_unless($group->hasMember($u) || $u->isAdmin(), 403, 'Join this circle to see its workspace.');
 
-        $messages = $group->messages()->whereNull('parent_id')->with(['sender:id,name,avatar', 'task'])
-            ->with(['replies' => fn ($q) => $q->with('sender:id,name,avatar')->withExists('savedFiles as saved')])->withExists('savedFiles as saved') // see Message::replies below
+        $messages = $group->messages()->whereNull('parent_id')->visibleTo($u)->with(['sender:id,name,avatar', 'task', 'reactions:id,name'])
+            ->with(['replies' => fn ($q) => $q->visibleTo($u)->with(['sender:id,name,avatar', 'reactions:id,name'])->withExists('savedFiles as saved')])->withExists('savedFiles as saved') // see Message::replies below
             ->latest()->limit(100)->get()->reverse()->values();
+        ChatReadReceipts::attach(
+            $messages,
+            ChatReadReceipts::groupKey($group->id),
+            $u->id,
+            $group->members()->pluck('users.id')->all(),
+        );
+        $messages->each(function ($message) {
+            $message->setAttribute('attachment_preview', NoteFileController::previewType($message->attachment_path));
+            $message->replies->each(fn ($reply) => $reply->setAttribute(
+                'attachment_preview',
+                NoteFileController::previewType($reply->attachment_path),
+            ));
+        });
 
         return Inertia::render('Groups/Show', [
             'group' => $group->load('owner:id,name'),
@@ -59,7 +74,8 @@ class GroupController extends Controller
             'members' => $group->members()->select('users.id', 'users.name', 'users.avatar', 'users.bio')->get()
                 ->each->append('avatar_url'),
             'messages' => $messages,
-            'modules' => $group->files()->where('kind', 'module')->with('user:id,name')->latest()->get(),
+            'modules' => $group->files()->where('kind', 'module')->with('user:id,name')->latest()->get()
+                ->each(fn ($file) => $file->setAttribute('preview', NoteFileController::previewType($file->path))),
             'tasks' => Task::where('study_group_id', $group->id)->with('assignees')->withCount('comments')->latest()->get(),
             'events' => Schedule::visibleTo($u)->where('study_group_id', $group->id)->with(['user:id,name,avatar', 'attendees:id,name,avatar'])->orderBy('starts_at')->get(),
         ]);

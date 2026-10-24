@@ -33,10 +33,16 @@ class TaskController extends Controller
 
     public function index(Request $request) {
         $u = $request->user();
+        // same rule as Task::canEdit(): creator, circle admin or assignee can tick a task (site admins can do everything)
+        $adminGroupIds = $u->isAdmin() ? null : \Illuminate\Support\Facades\DB::table('group_members')->where('user_id', $u->id)->where('role', 'admin')->pluck('study_group_id')->all();
         return Inertia::render('Tasks/Index', [
             'tasks' => Task::visibleTo($u)->with(['assignees', 'group:id,title'])->withCount('comments')
                 ->orderByRaw("status = 'completed'")->orderBy('due_date')->get()
-                ->each(fn ($t) => $t->assignees->each->append('avatar_url')),
+                ->each(function ($t) use ($u, $adminGroupIds) {
+                    $t->assignees->each->append('avatar_url');
+                    $t->setAttribute('can_edit', $t->created_by === $u->id || $adminGroupIds === null
+                        || ($t->study_group_id && in_array($t->study_group_id, $adminGroupIds)) || $t->assignees->contains('id', $u->id));
+                }),
             'groups' => $u->groups()->with('members:users.id,users.name')->get(['study_groups.id', 'title']),
         ]);
     }

@@ -22,6 +22,14 @@ class NoteFileController extends Controller
         'mp4' => ['video', 'video/mp4'], 'webm' => ['video', 'video/webm'],
     ];
 
+    public static function previewType(?string $path): ?string {
+        return $path ? (self::PREVIEWABLE[strtolower(pathinfo($path, PATHINFO_EXTENSION))][0] ?? null) : null;
+    }
+
+    public static function previewMimeType(?string $path): ?string {
+        return $path ? (self::PREVIEWABLE[strtolower(pathinfo($path, PATHINFO_EXTENSION))][1] ?? null) : null;
+    }
+
     private function previewInfo(NoteFile $f): ?array {
         return $f->path ? (self::PREVIEWABLE[strtolower(pathinfo($f->path, PATHINFO_EXTENSION))] ?? null) : null;
     }
