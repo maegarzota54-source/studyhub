@@ -122,19 +122,13 @@ class AdminController extends Controller
     }
 
     // ---------- Groups ----------
-HEAD
+    
     public function groups(Request $request) {
-        $groups = StudyGroup::withCount(['members', 'messages', 'ratings'])->withAvg('ratings', 'stars')->with('owner:id,name')
-
-    public function groups(Request $request)
-    {
-        $groups = StudyGroup::withCount(['members', 'messages'])->with('owner:id,name')
- 7b3217d9f5d993749afaac47080e28c43778693e
-            ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))
-            ->latest()->paginate(12)->withQueryString();
-
-        return $this->page('Admin/Groups', ['groups' => $groups, 'filters' => $request->only('q')]);
-    }
+    $groups = StudyGroup::withCount(['members', 'messages', 'ratings'])->withAvg('ratings', 'stars')->with('owner:id,name')
+        ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))
+        ->latest()->paginate(12)->withQueryString();
+    return $this->page('Admin/Groups', ['groups' => $groups, 'filters' => $request->only('q')]);
+}
 
     public function destroyGroup(StudyGroup $group)
     {

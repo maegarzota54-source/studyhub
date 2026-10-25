@@ -130,15 +130,12 @@ export default function AppLayout({ title, children }) {
   const titleStrip = (
     <div className="border-b border-gray-200 bg-white px-4 py-3 md:px-6"><h1 className="truncate text-lg font-semibold md:text-xl">{title}</h1></div>
   );
-HEAD
   const flashBar = flash?.success && <div role="status" aria-live="polite" className="bg-hunter-100 px-4 py-2 text-sm text-hunter-800 md:px-6">{flash.success}</div>;
   const announcementBar = announcement && auth.user.role !== 'admin'
     ? <div role="status" className="bg-[#E30B5C] px-4 py-3 text-sm font-medium text-white md:px-6">{announcement}</div>
     : null;
 
-
-  const flashBar = flash?.success && <div className="bg-hunter-100 px-4 py-2 text-sm text-hunter-800 md:px-6">{flash.success}</div>;
-
+  
   if (isTop) {
     return (
       <div className="flex min-h-screen flex-col bg-cool-100 text-slate-900">
@@ -152,13 +149,10 @@ HEAD
           </div>
           {open && <nav className="space-y-1 border-t border-hunter-800 px-3 py-3 xl:hidden" aria-label="Main menu">{links('stack')}</nav>}
         </header>
-<<<<<<< HEAD
         {titleStrip}{flashBar}{announcementBar}
         <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 p-3 sm:p-4 md:p-6 focus:outline-none">{children}</main>
-=======
-        {titleStrip}{flashBar}
-        <main className="min-w-0 flex-1 p-3 sm:p-4 md:p-6">{children}</main>
->>>>>>> 7b3217d9f5d993749afaac47080e28c43778693e
+        
+
         <CallOverlay />
       </div>
     );
@@ -199,12 +193,8 @@ HEAD
         </header>
         <div className="md:hidden">{titleStrip}</div>
         {flashBar}
-<<<<<<< HEAD
         {announcementBar}
         <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 p-3 sm:p-4 md:p-6 focus:outline-none">{children}</main>
-=======
-        <main className="min-w-0 flex-1 p-3 sm:p-4 md:p-6">{children}</main>
->>>>>>> 7b3217d9f5d993749afaac47080e28c43778693e
       </div>
       <CallOverlay />
     </div>
