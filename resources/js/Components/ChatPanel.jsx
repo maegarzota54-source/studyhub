@@ -191,10 +191,11 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
     const send = (e) => {
         e.preventDefault();
         stick.current = true;
-        form.transform((d) => ({ ...d, parent_id: replyTo?.id ?? null })).post(postUrl, {
-            forceFormData: true, preserveScroll: true,
-            onSuccess: () => { form.reset(); setReplyTo(null); if (fileInput.current) fileInput.current.value = ''; },
-        });
+        form.transform((d) => ({ ...d, parent_id: replyTo?.id ?? null }));
+        form.post(postUrl, {
+        forceFormData: true, preserveScroll: true,
+        onSuccess: () => { form.reset(); setReplyTo(null); if (fileInput.current) fileInput.current.value = ''; },
+});
     };
     const sendVoice = (file) => {
         stick.current = true; setVoiceError('');
