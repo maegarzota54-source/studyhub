@@ -27,14 +27,16 @@ export default function Schedule({ month, events, groups }) {
             <h2 className="font-semibold">{first.toLocaleString([], { month: 'long', year: 'numeric' })}</h2>
             <Btn variant="ghost" onClick={() => go(1)} aria-label="Next month">›</Btn>
           </div>
-          <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg bg-gray-200 text-xs">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => <div key={d} className="bg-cool-100 p-1 text-center font-medium">{d}</div>)}
-            {cells.map((d) => (
-              <div key={key(d)} className={`min-h-20 bg-white p-1 ${d.getMonth() !== m - 1 ? 'opacity-40' : ''}`}>
-                <span className={key(d) === key(new Date()) ? 'rounded-full bg-raspberry-600 px-1.5 text-white' : ''}>{d.getDate()}</span>
-                {(byDay[key(d)] ?? []).map((e) => <p key={e.id} title={`${e.title} (${e.visibility})`} className={`mt-0.5 truncate rounded px-1 ${sessionStatus(e) === 'ended' ? 'bg-gray-100 text-gray-400' : e.visibility === 'public' ? 'bg-hunter-100 text-hunter-800' : 'bg-raspberry-500/10 text-raspberry-600'}`}>{e.title}</p>)}
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <div className="grid min-w-[35rem] grid-cols-7 gap-px overflow-hidden rounded-lg bg-gray-200 text-xs sm:min-w-0">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => <div key={d} className="bg-cool-100 p-1 text-center font-medium">{d}</div>)}
+              {cells.map((d) => (
+                <div key={key(d)} className={`min-h-20 bg-white p-1 ${d.getMonth() !== m - 1 ? 'opacity-40' : ''}`}>
+                  <span className={key(d) === key(new Date()) ? 'rounded-full bg-raspberry-600 px-1.5 text-white' : ''}>{d.getDate()}</span>
+                  {(byDay[key(d)] ?? []).map((e) => <p key={e.id} title={`${e.title} (${e.visibility})`} className={`mt-0.5 truncate rounded px-1 ${sessionStatus(e) === 'ended' ? 'bg-gray-100 text-gray-400' : e.visibility === 'public' ? 'bg-hunter-100 text-hunter-800' : 'bg-raspberry-500/10 text-raspberry-600'}`}>{e.title}</p>)}
+                </div>
+              ))}
+            </div>
           </div>
         </Card>
         <div className="space-y-6">

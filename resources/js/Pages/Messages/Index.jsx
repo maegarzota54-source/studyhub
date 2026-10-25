@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import AppLayout, { Card } from '@/Layouts/AppLayout';
 import ChatPanel from '@/Components/ChatPanel';
 import CallPanel from '@/Components/CallPanel';
@@ -9,13 +11,24 @@ import { ActiveBadge, GroupCover } from '@/Components/GroupBits';
 export default function Messages({ contacts = [], peer = null, messages = [], groups = [], group = null, groupMembers = [], auth }) {
     const me = auth.user.id;
     const channel = peer ? `dm.${Math.min(me, peer.id)}.${Math.max(me, peer.id)}` : null;
+    const [showConversations, setShowConversations] = useState(!group && !peer);
+
+    useEffect(() => {
+        setShowConversations(!group && !peer);
+    }, [group?.id, peer?.id]);
 
     return (
         <AppLayout title="Messages">
             <Head title="Messages" />
             <div className="grid gap-4 lg:grid-cols-4">
                 {/* ---------- left: every study group (with its picture) + direct messages ---------- */}
-                <div className="space-y-4 lg:col-span-1">
+                <button type="button" onClick={() => setShowConversations((shown) => !shown)}
+                    aria-expanded={showConversations} aria-controls="conversation-list"
+                    className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-semibold lg:hidden">
+                    {showConversations ? 'Hide conversations' : 'Switch conversation'}
+                    {showConversations ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+                <div id="conversation-list" className={`${showConversations ? 'space-y-4' : 'hidden'} lg:col-span-1 lg:block`}>
                     <Card>
                         <h2 className="mb-3 font-semibold">Study groups</h2>
                         {groups.length === 0 && <p className="text-sm text-gray-500">Join a circle to see its chat here.</p>}
@@ -61,12 +74,12 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
                                 <ChatPanel threaded messages={messages} channel={`group.${group.id}`} postUrl={route('messages.group', group.id)} />
                             </div>
                             <div className="space-y-4 xl:col-span-2">
-                                <CallPanel targets={groupMembers.filter((m) => m.id !== me).map((m) => m.id)} people={groupMembers} log={{ group_id: group.id }} />
+                                <CallPanel targets={groupMembers.filter((m) => m.id !== me).map((m) => m.id)} people={groupMembers} />
                                 <SharedReader groupId={group.id} />
                             </div>
                         </div>
                     </>) : peer ? (<>
-                        <CallPanel targets={[peer.id]} people={[peer]} log={{ user_id: peer.id }} />
+                        <CallPanel targets={[peer.id]} people={[peer]} />
                         <ChatPanel messages={messages} channel={channel} postUrl={route('messages.direct', peer.id)} />
                     </>) : <p className="text-sm text-gray-500">Pick a study group or a student to start a conversation.</p>}
                 </div>

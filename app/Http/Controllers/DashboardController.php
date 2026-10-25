@@ -1,7 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Models\{Schedule, StudySession, Task};
+use App\Models\Schedule;
+use App\Models\StudySession;
+use App\Models\Task;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -23,6 +26,7 @@ class DashboardController extends Controller
 
         $chart = collect(range(6, 0))->map(function ($i) use ($perDay) {
             $d = now()->subDays($i);
+
             return [
                 'day' => $d->format('D'),
                 'date' => $d->format('M j'),
@@ -36,9 +40,14 @@ class DashboardController extends Controller
             ->where('studied_on', '>=', now()->subDays(90)->toDateString())
             ->pluck('studied_on')->map(fn ($d) => $d->toDateString())->unique()->flip();
         $cursor = now();
-        if (!isset($dates[$cursor->toDateString()])) $cursor = $cursor->subDay();
+        if (! isset($dates[$cursor->toDateString()])) {
+            $cursor = $cursor->subDay();
+        }
         $streak = 0;
-        while (isset($dates[$cursor->toDateString()])) { $streak++; $cursor = $cursor->subDay(); }
+        while (isset($dates[$cursor->toDateString()])) {
+            $streak++;
+            $cursor = $cursor->subDay();
+        }
 
         $weekStart = now()->startOfWeek();
         $weekMinutes = StudySession::where('user_id', $u->id)->where('studied_on', '>=', $weekStart->toDateString())->sum('minutes');
@@ -59,7 +68,7 @@ class DashboardController extends Controller
             'sessions' => Schedule::visibleTo($u)->with('group:id,title')->where('starts_at', '>=', now())->orderBy('starts_at')->limit(5)->get(),
             'tasks' => Task::where('assignee_id', $u->id)->where('status', 'pending')->with('group:id,title')
                 ->orderByRaw('due_date is null')->orderBy('due_date')->limit(6)->get(['id', 'title', 'due_date', 'study_group_id']),
-            'notifications' => $u->notifications()->limit(5)->get()->map(fn ($n) => [
+            'notifications' => $u->notifications()->latest()->limit(5)->get()->map(fn ($n) => [
                 'id' => $n->id, 'message' => $n->data['message'] ?? '', 'url' => $n->data['url'] ?? null,
                 'read' => (bool) $n->read_at, 'ago' => $n->created_at->diffForHumans()]),
         ]);
