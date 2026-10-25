@@ -15,7 +15,8 @@ const NAV = [
 const NAV_POSITION = 'side';
 
 export default function AppLayout({ title, children }) {
-  const { auth, unread, flash, announcement, peerNamespace, recent = [] } = usePage().props;
+  const { auth, unread, flash, peerNamespace, recent_notifications: recentNotifications, recent: legacyRecent = [] } = usePage().props;
+  const recent = recentNotifications ?? legacyRecent;
   const [panel, setPanel] = useState(null);  // which header dropdown is open: 'bell' | 'profile' | null
   const [open, setOpen] = useState(false);   // phone menu (hamburger)
 
@@ -130,10 +131,6 @@ export default function AppLayout({ title, children }) {
     <div className="border-b border-gray-200 bg-white px-4 py-3 md:px-6"><h1 className="truncate text-lg font-semibold md:text-xl">{title}</h1></div>
   );
   const flashBar = flash?.success && <div className="bg-hunter-100 px-4 py-2 text-sm text-hunter-800 md:px-6">{flash.success}</div>;
-  const announcementBar = announcement && auth.user.role !== 'admin'
-    ? <div role="status" className="bg-[#E30B5C] px-4 py-3 text-sm font-medium text-white md:px-6">{announcement}</div>
-    : null;
-
   if (isTop) {
     return (
       <div className="flex min-h-screen flex-col bg-cool-100 text-slate-900">
@@ -146,7 +143,7 @@ export default function AppLayout({ title, children }) {
           </div>
           {open && <nav className="space-y-1 border-t border-hunter-800 px-3 py-3 xl:hidden" aria-label="Main menu">{links('stack')}</nav>}
         </header>
-        {titleStrip}{flashBar}{announcementBar}
+        {titleStrip}{flashBar}
         <main className="min-w-0 flex-1 p-3 sm:p-4 md:p-6">{children}</main>
         <CallOverlay />
       </div>
@@ -187,7 +184,6 @@ export default function AppLayout({ title, children }) {
         </header>
         <div className="md:hidden">{titleStrip}</div>
         {flashBar}
-        {announcementBar}
         <main className="min-w-0 flex-1 p-3 sm:p-4 md:p-6">{children}</main>
       </div>
       <CallOverlay />
