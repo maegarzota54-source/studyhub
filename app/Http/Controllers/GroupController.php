@@ -71,7 +71,14 @@ class GroupController extends Controller
         return Inertia::render('Groups/Show', [
             'group' => $group->load('owner:id,name'),
             'isGroupAdmin' => $group->isGroupAdmin($u),
+            'rating' => [
+                'avg' => round((float) $group->ratings()->avg('stars'), 1),
+                'count' => $group->ratings()->count(),
+                'mine' => $group->ratings()->where('user_id', $u->id)->first(['stars', 'comment']),
+                'recent' => $group->ratings()->with('user:id,name')->latest()->limit(5)->get(['id', 'user_id', 'stars', 'comment', 'created_at']),
+            ],
             'members' => $group->members()->select('users.id', 'users.name', 'users.avatar', 'users.bio')->get()
+                ->each(fn ($m) => $m->setAttribute('circle_role', $m->pivot->role))
                 ->each->append('avatar_url'),
             'messages' => $messages,
             'modules' => $group->files()->where('kind', 'module')->with('user:id,name')->latest()->get()

@@ -27,7 +27,7 @@ export default function Progress({ daily, weekHours, totalHours, groupBoards, re
           <p className="mt-3 text-xl font-semibold">{totalHours} h</p><p className="text-sm text-gray-500">All time</p></Card>
         <Card className="lg:col-span-2">
           <h2 className="mb-2 font-semibold">Hours per day (last 7 days)</h2>
-          <div className="h-48"><ResponsiveContainer><BarChart data={daily}><XAxis dataKey="day" /><YAxis width={30} /><Tooltip /><Bar dataKey="hours" fill="#355E3B" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div>
+          <div className="h-48"><ResponsiveContainer><BarChart data={daily}><XAxis dataKey="day" /><YAxis width={30} /><Tooltip /><Bar dataKey="hours" fill="#12315F" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div>
         </Card>
         <Card className="lg:col-span-3">
           <h2 className="mb-3 font-semibold">Log study time</h2>

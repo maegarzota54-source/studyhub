@@ -23,9 +23,11 @@ class RegistrationTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
+            'privacy_consent' => true,
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        // StudyHub sends new students to the login page after registering.
+        $this->assertGuest();
+        $response->assertRedirect(route('login'));
     }
 }

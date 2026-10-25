@@ -24,7 +24,7 @@ export default function FilePreviewModal({ item, onClose, downloadUrl }) {
                 onClick={(event) => event.stopPropagation()}
             >
                 <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 sm:px-5">
-                    <h2 className="min-w-0 flex-1 truncate font-semibold text-[#081C15]">
+                    <h2 className="min-w-0 flex-1 truncate font-semibold text-[#0A1F44]">
                         {item.title ?? item.attachment_name}
                     </h2>
                     {downloadUrl && (

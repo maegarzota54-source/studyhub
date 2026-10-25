@@ -12,7 +12,7 @@ export function Dialog({ title, onClose, children }) {
     return (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label={title}
             onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-            <div className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-[#EBF2FA] text-[#081C15] shadow-2xl">
+            <div className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-[#F5EFE6] text-[#0A1F44] shadow-2xl">
                 <header className="flex items-center justify-between border-b border-black/10 px-4 py-3">
                     <h2 className="font-semibold">{title}</h2>
                     <button type="button" onClick={onClose} aria-label="Close" className="rounded-full p-1 hover:bg-black/10"><X size={18} /></button>
@@ -27,7 +27,7 @@ const SearchBox = ({ value, onChange, placeholder }) => (
     <div className="relative border-b border-black/10 p-3">
         <Search size={15} className="pointer-events-none absolute left-6 top-1/2 -translate-y-1/2 text-gray-500" />
         <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} aria-label={placeholder}
-            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm focus:border-[#038666] focus:outline-none" />
+            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm focus:border-[#0B8A94] focus:outline-none" />
     </div>
 );
 
@@ -56,9 +56,9 @@ export function ForwardDialog({ message, onClose }) {
 
     const Row = ({ on, onClick, img, label }) => (
         <button type="button" onClick={onClick} aria-pressed={on} className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm hover:bg-black/5">
-            {img ? <img src={img} alt="" className="h-8 w-8 rounded-full object-cover" /> : <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1B4322] text-xs font-bold text-white">{label[0]}</span>}
+            {img ? <img src={img} alt="" className="h-8 w-8 rounded-full object-cover" /> : <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#12315F] text-xs font-bold text-white">{label[0]}</span>}
             <span className="min-w-0 flex-1 truncate">{label}</span>
-            <span className={`flex h-5 w-5 items-center justify-center rounded-full border ${on ? 'border-[#038666] bg-[#038666] text-white' : 'border-gray-400'}`}>{on && <Check size={12} />}</span>
+            <span className={`flex h-5 w-5 items-center justify-center rounded-full border ${on ? 'border-[#0B8A94] bg-[#0B8A94] text-white' : 'border-gray-400'}`}>{on && <Check size={12} />}</span>
         </button>
     );
 
@@ -77,7 +77,7 @@ export function ForwardDialog({ message, onClose }) {
                 {data && shownG.length + shownP.length === 0 && <p className="p-3 text-sm text-gray-500">No chats match.</p>}
             </div>
             <footer className="border-t border-black/10 p-3">
-                <button type="button" onClick={send} disabled={!picked || busy} className="w-full rounded-lg bg-[#FBB02D] py-2.5 text-sm font-bold text-[#081C15] hover:brightness-95 disabled:opacity-50">
+                <button type="button" onClick={send} disabled={!picked || busy} className="w-full rounded-lg bg-[#2EC4B6] py-2.5 text-sm font-bold text-[#0A1F44] hover:brightness-95 disabled:opacity-50">
                     {busy ? 'Forwarding…' : picked ? `Forward to ${picked} chat${picked > 1 ? 's' : ''}` : 'Choose a chat'}
                 </button>
             </footer>
@@ -111,9 +111,9 @@ export function FilePickerDialog({ dest, onClose }) {
                 {items && shown.length === 0 && <p className="p-3 text-sm text-gray-500">{items.length ? 'No files match.' : 'You have no uploaded files yet. Add some in Notes & Files.'}</p>}
                 {shown.map((i) => (
                     <button key={i.id} type="button" onClick={() => share(i)} disabled={busy !== null} className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm hover:bg-black/5 disabled:opacity-60">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#1B4322] text-[#FBB02D]"><FileIcon size={16} /></span>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#12315F] text-[#2EC4B6]"><FileIcon size={16} /></span>
                         <span className="min-w-0 flex-1"><b className="block truncate font-medium">{i.title}</b><span className="block truncate text-xs text-gray-500">{i.group} · {i.kind} · {bytes(i.size)}</span></span>
-                        <span className="text-xs font-semibold text-[#038666]">{busy === i.id ? 'Sending…' : 'Send'}</span>
+                        <span className="text-xs font-semibold text-[#0B8A94]">{busy === i.id ? 'Sending…' : 'Send'}</span>
                     </button>
                 ))}
             </div>

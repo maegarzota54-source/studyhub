@@ -8,7 +8,7 @@ export default function Reports({ flagged }) {
         <AdminLayout title="Reports" crumbs={[['Reports']]} actions={<span className="text-sm text-gray-500">{flagged.length} open</span>}>
             <Head title="Reports" />
             {flagged.length === 0 ? (
-                <Panel><div className="flex flex-col items-center gap-2 px-6 py-14 text-center text-gray-500"><CheckCircle2 size={32} className="text-[#355E3B]" /><p className="font-medium text-[#1F2937]">All clear</p><p className="text-sm">No reported messages need review.</p></div></Panel>
+                <Panel><div className="flex flex-col items-center gap-2 px-6 py-14 text-center text-gray-500"><CheckCircle2 size={32} className="text-[#12315F]" /><p className="font-medium text-[#1F2937]">All clear</p><p className="text-sm">No reported messages need review.</p></div></Panel>
             ) : (
                 <div className="space-y-4">
                     {flagged.map((m) => (

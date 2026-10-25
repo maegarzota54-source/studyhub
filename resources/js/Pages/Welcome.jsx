@@ -5,7 +5,7 @@ import ShStyle from '@/Components/ShStyle';
 
 
 const SUBJECTS = [
-    { n: 'Information Assurance security', tone: '#355E3B' }, { n: 'System Integration and Architecture', tone: '#4a7c52' }, { n: 'Project Management', tone: '#1F2937' },
+    { n: 'Information Assurance security', tone: '#12315F' }, { n: 'System Integration and Architecture', tone: '#1E4E8C' }, { n: 'Project Management', tone: '#1F2937' },
     { n: 'Logic Programming', tone: '#C81E51' }, { n: 'Networking', tone: '#E30B5C' },
 ];
 
@@ -27,7 +27,7 @@ function ChatPreview() {
             <div className="flex-1 space-y-3 overflow-y-auto p-4">
                 {msgs.map((m, i) => (
                     <div key={i} className={`sh-fade flex ${m.me ? 'justify-end' : ''}`}>
-                        <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm" style={{ background: m.me ? '#355E3B' : '#F3F4F6', color: m.me ? '#fff' : '#1F2937' }}>
+                        <div className="max-w-[80%] rounded-2xl px-3 py-2 text-sm" style={{ background: m.me ? '#12315F' : '#F3F4F6', color: m.me ? '#fff' : '#1F2937' }}>
                             {!m.me && <b className="mb-0.5 block text-xs text-[#C81E51]">{m.n}</b>}{m.t}
                         </div>
                     </div>
@@ -74,7 +74,7 @@ function SchedulePreview() {
                 <div key={e.t} className="mb-2 flex items-center justify-between rounded-xl border border-gray-200 p-3">
                     <div><p className="text-sm font-medium">{e.t}</p><p className="text-xs text-gray-500">{e.time}</p></div>
                     <button onClick={() => setEvents(events.map((x, j) => (j === i ? { ...x, pub: !x.pub } : x)))}
-                        className="rounded-full px-3 py-1 text-xs font-semibold transition-colors" style={{ background: e.pub ? '#d6e5d9' : '#fde7ef', color: e.pub ? '#2a4a2f' : '#C81E51' }}>
+                        className="rounded-full px-3 py-1 text-xs font-semibold transition-colors" style={{ background: e.pub ? '#D6E0EF' : '#fde7ef', color: e.pub ? '#0E2A55' : '#C81E51' }}>
                         {e.pub ? 'Public: whole circle' : 'Private: only me'}
                     </button>
                 </div>
@@ -89,12 +89,12 @@ function ProgressPreview() {
     const total = hrs.reduce((a, b) => a + b, 0).toFixed(1);
     return (
         <div className="p-4">
-            <p className="sh-display text-3xl font-extrabold text-[#355E3B]">{hover !== null ? `${hrs[hover]} h` : `${total} h`}</p>
+            <p className="sh-display text-3xl font-extrabold text-[#12315F]">{hover !== null ? `${hrs[hover]} h` : `${total} h`}</p>
             <p className="text-xs text-gray-500">{hover !== null ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][hover] : 'Example week. Hover a bar.'}</p>
             <div className="mt-4 flex h-40 items-end gap-2">
                 {hrs.map((h, i) => (
                     <button key={i} onMouseEnter={() => setHover(i)} onFocus={() => setHover(i)} onMouseLeave={() => setHover(null)} aria-label={`${h} hours`}
-                        className="sh-grow flex-1 rounded-t-lg transition-colors" style={{ height: `${(h / 4) * 100}%`, background: hover === i ? '#E30B5C' : '#355E3B', animationDelay: `${i * 70}ms` }} />
+                        className="sh-grow flex-1 rounded-t-lg transition-colors" style={{ height: `${(h / 4) * 100}%`, background: hover === i ? '#E30B5C' : '#12315F', animationDelay: `${i * 70}ms` }} />
                 ))}
             </div>
             <div className="mt-1 flex gap-2 text-center text-xs text-gray-500">{['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => <span key={i} className="flex-1">{d}</span>)}</div>
@@ -117,7 +117,7 @@ export default function Welcome({ canLogin, canRegister }) {
 
             <header className="sticky top-0 z-30 border-b border-gray-200/70 bg-[#F3F4F6]/85 backdrop-blur">
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-                    <Link href="/" className="sh-display flex items-center gap-2 text-lg font-extrabold text-[#355E3B]">
+                    <Link href="/" className="sh-display flex items-center gap-2 text-lg font-extrabold text-[#12315F]">
                         <img src="/images/studyhub-logo.png" alt="" className="h-10 w-10 rounded-full bg-white" /> StudyHub-Group Circle System
                     </Link>
                     <nav className="flex items-center gap-2">
@@ -131,7 +131,7 @@ export default function Welcome({ canLogin, canRegister }) {
 
             <section className="mx-auto grid max-w-6xl items-center gap-8 px-6 pb-16 pt-12 lg:grid-cols-2">
                 <div className="sh-fade">
-                    <h1 className="sh-display text-5xl font-extrabold leading-[1.05] text-[#1d3321] md:text-6xl">Study is better with a circle.</h1>
+                    <h1 className="sh-display text-5xl font-extrabold leading-[1.05] text-[#0A1F44] md:text-6xl">Study is better with a circle.</h1>
                     <p className="mt-5 max-w-lg text-lg text-gray-600">
                         StudyHub puts you in a small group with students who share your subjects, schedule and goals. Chat, call, share notes and track progress in one private place.
                     </p>
@@ -145,7 +145,7 @@ export default function Welcome({ canLogin, canRegister }) {
                     </div>
                 </div>
                 <div className="relative mx-auto w-full max-w-lg">
-                <div className="absolute inset-6 rounded-full bg-[#d6e5d9]/70 blur-2xl" aria-hidden="true" />
+                <div className="absolute inset-6 rounded-full bg-[#D6E0EF]/70 blur-2xl" aria-hidden="true" />
                     <img
                     src="/images/study-group.png"
                     alt="Four students studying together around open books"
@@ -153,7 +153,7 @@ export default function Welcome({ canLogin, canRegister }) {
                     className="relative w-full select-none"
                     style={{ mixBlendMode: 'multiply' }}
                     />
-                    <div key={subject.n} className="sh-fade absolute bottom-6 left-4 flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#1d3321] shadow-lg">
+                    <div key={subject.n} className="sh-fade absolute bottom-6 left-4 flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0A1F44] shadow-lg">
                         <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
                         {subject.n} circle
                     </div>
@@ -163,20 +163,20 @@ export default function Welcome({ canLogin, canRegister }) {
 
             <section className="border-y border-gray-200 bg-white/60">
                 <div className="mx-auto max-w-6xl px-6 py-16">
-                    <h2 className="sh-display text-3xl font-extrabold text-[#1d3321]">Everything your circle needs, in one place</h2>
+                    <h2 className="sh-display text-3xl font-extrabold text-[#0A1F44]">Everything your circle needs, in one place</h2>
                     <p className="mt-2 text-gray-600">Pick a feature and try it. These previews are live.</p>
                     <div className="mt-8 grid gap-6 lg:grid-cols-5">
                         <div className="space-y-2 lg:col-span-2" role="tablist" aria-label="Features">
                             {TABS.map(({ id, label, Icon, blurb }) => (
                                 <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className="sh-tab">
-                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: tab === id ? '#E30B5C' : '#355E3B' }}><Icon size={18} /></span>
+                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: tab === id ? '#E30B5C' : '#12315F' }}><Icon size={18} /></span>
                                     <span><b className="sh-display block">{label}</b><span className="text-sm text-gray-600">{blurb}</span></span>
                                 </button>
                             ))}
                         </div>
                         <div className="lg:col-span-3">
-                            <div className="sh-card h-96 overflow-hidden shadow-xl shadow-[#355E3B]/10">
-                                <div className="flex items-center gap-2 bg-[#355E3B] px-4 py-2 text-sm font-semibold text-white">
+                            <div className="sh-card h-96 overflow-hidden shadow-xl shadow-[#12315F]/10">
+                                <div className="flex items-center gap-2 bg-[#12315F] px-4 py-2 text-sm font-semibold text-white">
                                     <span className="h-2.5 w-2.5 rounded-full bg-[#E30B5C]" /> Programming Study Group
                                 </div>
                                 <div key={tab} className="sh-fade h-[calc(100%-2.5rem)] overflow-y-auto"><Preview /></div>
@@ -187,11 +187,11 @@ export default function Welcome({ canLogin, canRegister }) {
             </section>
 
             <section className="mx-auto max-w-6xl px-6 py-16">
-                <h2 className="sh-display text-3xl font-extrabold text-[#1d3321]">Up and running in three steps</h2>
+                <h2 className="sh-display text-3xl font-extrabold text-[#0A1F44]">Up and running in three steps</h2>
                 <div className="mt-8 grid gap-4 md:grid-cols-3">
                     {[['Find your people', 'Search circles by subject and skill level, or create your own.'], ['Study together', 'Chat, jump on a call, share files and plan sessions.'], ['See your progress', 'Log hours, finish tasks and watch your circle improve.']].map(([t, d], i) => (
                         <div key={t} className="sh-card p-6 transition-transform hover:-translate-y-1">
-                            <span className="sh-display flex h-10 w-10 items-center justify-center rounded-full bg-[#355E3B] font-bold text-white">{i + 1}</span>
+                            <span className="sh-display flex h-10 w-10 items-center justify-center rounded-full bg-[#12315F] font-bold text-white">{i + 1}</span>
                             <h3 className="sh-display mt-4 text-xl font-bold">{t}</h3><p className="mt-1 text-sm text-gray-600">{d}</p>
                         </div>
                     ))}
@@ -199,9 +199,9 @@ export default function Welcome({ canLogin, canRegister }) {
             </section>
 
             <section className="px-6 pb-16">
-                <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 rounded-3xl px-8 py-14 text-center text-white" style={{ background: 'linear-gradient(135deg,#355E3B,#1d3321)' }}>
+                <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 rounded-3xl px-8 py-14 text-center text-white" style={{ background: 'linear-gradient(135deg,#12315F,#0A1F44)' }}>
                     <h2 className="sh-display text-4xl font-extrabold">Your circle is waiting.</h2>
-                    <p className="max-w-md text-[#d6e5d9]">Create a free account and join your first study group today.</p>
+                    <p className="max-w-md text-[#D6E0EF]">Create a free account and join your first study group today.</p>
                     <Link href={route('register')} className="sh-btn sh-btn-accent">Create my account <ArrowRight size={16} /></Link>
                 </div>
             </section>

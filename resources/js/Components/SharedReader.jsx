@@ -39,19 +39,19 @@ function Viewer({ file, page, scroll, canControl, onScroll }) {
     };
 
     if (file.kind === 'pdf') return <iframe key={page} title={file.name} src={`${file.url}#page=${page}&toolbar=0&navpanes=0`} className="h-full w-full rounded-lg bg-white" />;
-    if (file.kind === 'image') return <div ref={box} onScroll={handleScroll} className="h-full overflow-auto rounded-lg bg-[#081C15]"><img src={file.url} alt={file.name} className="w-full" /></div>;
-    if (file.kind === 'text') return <pre ref={box} onScroll={handleScroll} className="h-full overflow-auto whitespace-pre-wrap break-words rounded-lg bg-[#EBF2FA] p-3 text-xs text-[#081C15]">{text ?? 'Loading…'}</pre>;
+    if (file.kind === 'image') return <div ref={box} onScroll={handleScroll} className="h-full overflow-auto rounded-lg bg-[#0A1F44]"><img src={file.url} alt={file.name} className="w-full" /></div>;
+    if (file.kind === 'text') return <pre ref={box} onScroll={handleScroll} className="h-full overflow-auto whitespace-pre-wrap break-words rounded-lg bg-[#F5EFE6] p-3 text-xs text-[#0A1F44]">{text ?? 'Loading…'}</pre>;
     if (file.kind === 'audio') return (
-        <div className="flex h-full flex-col items-center justify-center gap-3 rounded-lg bg-[#081C15] p-4">
-            <FileIcon size={32} color="#FBB02D" />
+        <div className="flex h-full flex-col items-center justify-center gap-3 rounded-lg bg-[#0A1F44] p-4">
+            <FileIcon size={32} color="#2EC4B6" />
             <audio controls src={file.url} className="w-full" />
         </div>
     );
     return (
-        <div className="flex h-full flex-col items-center justify-center gap-3 rounded-lg bg-[#081C15] p-4 text-center text-sm">
-            <FileIcon size={32} color="#FBB02D" />
+        <div className="flex h-full flex-col items-center justify-center gap-3 rounded-lg bg-[#0A1F44] p-4 text-center text-sm">
+            <FileIcon size={32} color="#2EC4B6" />
             <p>A preview isn't available for this file type.</p>
-            <a href={file.download} className="inline-flex items-center gap-2 rounded-lg bg-[#FBB02D] px-3 py-2 font-semibold text-[#081C15]"><Download size={14} /> Download to read</a>
+            <a href={file.download} className="inline-flex items-center gap-2 rounded-lg bg-[#2EC4B6] px-3 py-2 font-semibold text-[#0A1F44]"><Download size={14} /> Download to read</a>
         </div>
     );
 }
@@ -59,15 +59,15 @@ function Viewer({ file, page, scroll, canControl, onScroll }) {
 function FileList({ title, empty, items, reading, onOpen, same, className = '' }) {
     return (
         <div className={className}>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#EBF2FA]/60">{title}</p>
-            {items.length === 0 && <p className="text-sm text-[#EBF2FA]/70">{empty}</p>}
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#F5EFE6]/60">{title}</p>
+            {items.length === 0 && <p className="text-sm text-[#F5EFE6]/70">{empty}</p>}
             <ul className="max-h-40 space-y-1 overflow-y-auto">
                 {items.map((f) => { const Icon = ICON[f.kind]; const live = same(reading?.file, f); return (
                     <li key={`${f.source}:${f.id}`}>
                         <button onClick={() => onOpen(f)} className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm transition-colors hover:bg-white/10 ${live ? 'bg-white/10' : ''}`}>
-                            <Icon size={16} color="#FBB02D" aria-hidden="true" />
-                            <span className="min-w-0 flex-1"><span className="block truncate">{f.name}</span><span className="block text-xs text-[#EBF2FA]/60">{f.by} · {size(f.size)}</span></span>
-                            {live ? <span className="text-xs font-semibold text-[#FBB02D]">Open</span> : <span className="text-xs text-[#EBF2FA]/60">{f.kind === 'none' ? 'Download only' : 'Read together'}</span>}
+                            <Icon size={16} color="#2EC4B6" aria-hidden="true" />
+                            <span className="min-w-0 flex-1"><span className="block truncate">{f.name}</span><span className="block text-xs text-[#F5EFE6]/60">{f.by} · {size(f.size)}</span></span>
+                            {live ? <span className="text-xs font-semibold text-[#2EC4B6]">Open</span> : <span className="text-xs text-[#F5EFE6]/60">{f.kind === 'none' ? 'Download only' : 'Read together'}</span>}
                         </button>
                     </li>); })}
             </ul>
@@ -147,19 +147,19 @@ export default function SharedReader({ groupId }) {
     const page = isPresenter || follow ? reading?.page ?? 1 : localPage;
 
     return (
-        <section className="overflow-hidden rounded-2xl text-[#EBF2FA]" style={{ background: '#1B4322' }} aria-label="Reading together">
+        <section className="overflow-hidden rounded-2xl text-[#F5EFE6]" style={{ background: '#12315F' }} aria-label="Reading together">
             <header className="flex items-center justify-between gap-2 px-4 py-3">
-                <h2 className="flex items-center gap-2 font-semibold"><BookOpen size={18} color="#FBB02D" aria-hidden="true" /> Reading together</h2>
+                <h2 className="flex items-center gap-2 font-semibold"><BookOpen size={18} color="#2EC4B6" aria-hidden="true" /> Reading together</h2>
                 {reading && (isPresenter
-                    ? <button onClick={stop} className="flex items-center gap-1 rounded-full bg-[#FBB02D] px-3 py-1 text-xs font-bold text-[#081C15]"><X size={12} /> Stop sharing</button>
-                    : <button onClick={() => { if (follow) setLocalPage(reading.page); setFollow(!follow); }} className="rounded-full border border-[#EBF2FA]/30 px-3 py-1 text-xs font-semibold hover:bg-white/10">{follow ? `Following ${reading.by}` : 'Follow again'}</button>)}
+                    ? <button onClick={stop} className="flex items-center gap-1 rounded-full bg-[#2EC4B6] px-3 py-1 text-xs font-bold text-[#0A1F44]"><X size={12} /> Stop sharing</button>
+                    : <button onClick={() => { if (follow) setLocalPage(reading.page); setFollow(!follow); }} className="rounded-full border border-[#F5EFE6]/30 px-3 py-1 text-xs font-semibold hover:bg-white/10">{follow ? `Following ${reading.by}` : 'Follow again'}</button>)}
             </header>
 
             {reading && file ? (
                 <div className="px-4 pb-4">
-                    <p className="mb-2 flex items-center gap-2 text-xs text-[#EBF2FA]/80">
-                        <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FBB02D] opacity-75" /><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#FBB02D]" /></span>
-                        {isPresenter ? 'You are sharing' : `${reading.by} is reading`}: <b className="truncate text-[#EBF2FA]">{file.name}</b>
+                    <p className="mb-2 flex items-center gap-2 text-xs text-[#F5EFE6]/80">
+                        <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#2EC4B6] opacity-75" /><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#2EC4B6]" /></span>
+                        {isPresenter ? 'You are sharing' : `${reading.by} is reading`}: <b className="truncate text-[#F5EFE6]">{file.name}</b>
                         <a href={file.download} aria-label="Download" className="ml-auto shrink-0 rounded p-1 hover:bg-white/10"><Download size={14} /></a>
                     </p>
                     {file.kind === 'pdf' && (
@@ -174,7 +174,7 @@ export default function SharedReader({ groupId }) {
                     <div className="h-72"><Viewer file={file} page={page} scroll={reading.scroll} canControl={canControl} onScroll={isPresenter ? sendScroll : null} /></div>
                 </div>
             ) : (
-                <p className="px-4 pb-3 text-sm text-[#EBF2FA]/80">Nothing is open. Open a file below and everyone in the circle sees what you are reading.</p>
+                <p className="px-4 pb-3 text-sm text-[#F5EFE6]/80">Nothing is open. Open a file below and everyone in the circle sees what you are reading.</p>
             )}
 
             <div className="border-t border-white/10 px-4 py-3">

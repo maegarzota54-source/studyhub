@@ -3,10 +3,10 @@ import { BookOpen } from 'lucide-react';
 
 const PEOPLE = [
     { n: 'Anna', bg: '#E30B5C', say: "Okay! I'll share the notes." },
-    { n: 'Mark', bg: '#4a7c52', say: 'Great! See you all at 10 AM.' },
+    { n: 'Mark', bg: '#1E4E8C', say: 'Great! See you all at 10 AM.' },
     { n: 'Liza', bg: '#1F2937', say: 'Who wants to quiz each other?' },
     { n: 'John', bg: '#C81E51', say: 'Just uploaded the chapter summary.' },
-    { n: 'Mia', bg: '#2a4a2f', say: 'Chapter 4 review: done!' },
+    { n: 'Mia', bg: '#0E2A55', say: 'Chapter 4 review: done!' },
 ];
 
 /**
@@ -14,7 +14,7 @@ const PEOPLE = [
  * Hover pauses it, tap a face to hear them, move the mouse to tilt it.
  * `youName` adds a new member (used on the register page).
  */
-export default function StudyOrbit({ label = 'Study circle', tone = '#355E3B', youName = '', size = 360, dark = false }) {
+export default function StudyOrbit({ label = 'Study circle', tone = '#12315F', youName = '', size = 360, dark = false }) {
     const [say, setSay] = useState(null);
     const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
@@ -42,7 +42,7 @@ export default function StudyOrbit({ label = 'Study circle', tone = '#355E3B', y
                     <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center" style={{ width: size * 0.3, height: size * 0.3 }}>
                         <span className="sh-pulse absolute inset-0 rounded-full" style={{ background: dark ? '#fff' : tone, opacity: 0.4 }} />
                         <div className="relative flex h-full w-full flex-col items-center justify-center text-white"
-                            style={{ background: `linear-gradient(145deg, ${tone}, #1d3321)`, clipPath: 'polygon(25% 4%,75% 4%,100% 50%,75% 96%,25% 96%,0 50%)', transition: 'background .4s' }}>
+                            style={{ background: `linear-gradient(145deg, ${tone}, #0A1F44)`, clipPath: 'polygon(25% 4%,75% 4%,100% 50%,75% 96%,25% 96%,0 50%)', transition: 'background .4s' }}>
                             <BookOpen size={size * 0.085} aria-hidden="true" />
                             <span className="sh-display mt-1 max-w-[80%] truncate text-center font-bold" style={{ fontSize: size * 0.036 }}>{label}</span>
                         </div>
@@ -70,7 +70,7 @@ export default function StudyOrbit({ label = 'Study circle', tone = '#355E3B', y
                     </div>
                 </div>
             </div>
-            <p className="mt-4 min-h-[3rem] text-center text-sm" style={{ color: dark ? '#d6e5d9' : '#4B5563' }} aria-live="polite">
+            <p className="mt-4 min-h-[3rem] text-center text-sm" style={{ color: dark ? '#D6E0EF' : '#4B5563' }} aria-live="polite">
                 {say ? <span key={say.n} className="sh-fade inline-block"><b className="sh-display">{say.n}:</b> {say.say}</span> : 'Tap a face. Hover to pause the circle.'}
             </p>
         </div>

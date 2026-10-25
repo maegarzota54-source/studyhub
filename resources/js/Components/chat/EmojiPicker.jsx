@@ -21,11 +21,11 @@ export default function EmojiPicker({ onPick, onClose }) {
     }, [onClose]);
 
     return (
-        <div ref={box} role="dialog" aria-label="Emoji" className="absolute bottom-full left-0 z-20 mb-2 w-72 rounded-2xl border border-black/10 bg-[#EBF2FA] p-2 text-[#081C15] shadow-xl">
+        <div ref={box} role="dialog" aria-label="Emoji" className="absolute bottom-full left-0 z-20 mb-2 w-72 rounded-2xl border border-black/10 bg-[#F5EFE6] p-2 text-[#0A1F44] shadow-xl">
             <div className="mb-2 flex gap-1" role="tablist">
                 {Object.keys(SETS).map((k) => (
                     <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
-                        className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${tab === k ? 'bg-[#FBB02D]' : 'hover:bg-black/10'}`}>{k}</button>
+                        className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${tab === k ? 'bg-[#2EC4B6]' : 'hover:bg-black/10'}`}>{k}</button>
                 ))}
             </div>
             <div className="grid max-h-44 grid-cols-8 gap-0.5 overflow-y-auto">

@@ -10,10 +10,10 @@ const rules = (pw) => [
 ];
 
 export default function Register() {
-    const { data, setData, post, processing, errors, reset } = useForm({ name: '', email: '', password: '', password_confirmation: '' });
+    const { data, setData, post, processing, errors, reset } = useForm({ name: '', email: '', password: '', password_confirmation: '', privacy_consent: false });
     const checks = rules(data.password);
     const score = checks.filter(([, ok]) => ok).length;
-    const meter = [['#D1D5DB', 'Start typing'], ['#E30B5C', 'Weak'], ['#C81E51', 'Getting there'], ['#4a7c52', 'Good'], ['#355E3B', 'Strong']][data.password ? score || 1 : 0];
+    const meter = [['#D1D5DB', 'Start typing'], ['#E30B5C', 'Weak'], ['#C81E51', 'Getting there'], ['#1E4E8C', 'Good'], ['#12315F', 'Strong']][data.password ? score || 1 : 0];
     const mismatch = data.password_confirmation && data.password !== data.password_confirmation;
     const first = data.name.trim().split(' ')[0];
 
@@ -42,7 +42,7 @@ export default function Register() {
                     {data.password && (
                         <ul className="mt-1 grid grid-cols-2 gap-x-3 text-xs text-gray-600">
                             {checks.map(([t, ok]) => (
-                                <li key={t} className="flex items-center gap-1">{ok ? <Check size={12} className="text-[#355E3B]" /> : <X size={12} className="text-gray-400" />}{t}</li>
+                                <li key={t} className="flex items-center gap-1">{ok ? <Check size={12} className="text-[#12315F]" /> : <X size={12} className="text-gray-400" />}{t}</li>
                             ))}
                         </ul>
                     )}
@@ -50,7 +50,14 @@ export default function Register() {
                 <PasswordField id="password_confirmation" label="Confirm password" autoComplete="new-password" value={data.password_confirmation}
                     onChange={(e) => setData('password_confirmation', e.target.value)}
                     error={errors.password_confirmation || (mismatch ? 'Passwords do not match yet.' : null)} placeholder="Type it again" />
-                <button className="sh-btn sh-btn-accent w-full" disabled={processing || mismatch}>{processing ? 'Creating your account…' : 'Create account'}</button>
+                <div>
+                    <label className="flex items-start gap-2 text-sm">
+                        <input id="privacy_consent" type="checkbox" className="mt-0.5 rounded" checked={data.privacy_consent} onChange={(e) => setData('privacy_consent', e.target.checked)} aria-describedby="privacy-help" />
+                        <span id="privacy-help">I have read the <a href={route('privacy')} target="_blank" rel="noreferrer" className="font-semibold underline">Privacy Notice</a> and agree to how StudyHub collects and uses my data (RA 10173).</span>
+                    </label>
+                    {errors.privacy_consent && <p role="alert" className="mt-1 text-xs text-[#E30B5C]">{errors.privacy_consent}</p>}
+                </div>
+                <button className="sh-btn sh-btn-accent w-full" disabled={processing || mismatch || !data.privacy_consent}>{processing ? 'Creating your account…' : 'Create account'}</button>
             </form>
         </AuthShell>
     );

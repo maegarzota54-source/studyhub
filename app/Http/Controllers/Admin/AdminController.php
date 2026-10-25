@@ -45,9 +45,10 @@ class AdminController extends Controller
                 'hours' => round(StudySession::sum('minutes') / 60), 'hours_week' => round(StudySession::where('studied_on', '>=', $week->toDateString())->sum('minutes') / 60),
                 'messages' => Message::count(), 'messages_week' => Message::where('created_at', '>=', $week)->count(),
                 'suspended' => User::where('is_suspended', true)->count(),
+                'ratings_avg' => round((float) \App\Models\GroupRating::avg('stars'), 1), 'ratings_count' => \App\Models\GroupRating::count(),
             ],
             'chart' => $chart,
-            'topGroups' => StudyGroup::withCount(['members', 'messages'])->with('owner:id,name')->orderByDesc('members_count')->orderByDesc('messages_count')->limit(5)->get(),
+            'topGroups' => StudyGroup::withCount(['members', 'messages', 'ratings'])->withAvg('ratings', 'stars')->with('owner:id,name')->orderByDesc('members_count')->orderByDesc('messages_count')->limit(5)->get(),
             'recentUsers' => User::latest()->limit(6)->get(['id', 'name', 'email', 'avatar', 'role', 'created_at']),
             'feed' => $feed,
         ]);
@@ -100,7 +101,7 @@ class AdminController extends Controller
 
     // ---------- Groups ----------
     public function groups(Request $request) {
-        $groups = StudyGroup::withCount(['members', 'messages'])->with('owner:id,name')
+        $groups = StudyGroup::withCount(['members', 'messages', 'ratings'])->withAvg('ratings', 'stars')->with('owner:id,name')
             ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))
             ->latest()->paginate(12)->withQueryString();
         return $this->page('Admin/Groups', ['groups' => $groups, 'filters' => $request->only('q')]);

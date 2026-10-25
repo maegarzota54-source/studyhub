@@ -1,6 +1,7 @@
 <?php
 // Add to the bottom of routes/web.php:  require __DIR__.'/studyhub.php';
 // (and remove Breeze's default '/dashboard' route to avoid a duplicate name)
+use App\Http\Controllers\{GroupMemberController, GroupRatingController};
 use App\Http\Controllers\{DashboardController, GroupController, MemberController, MessageController, NoteFileController,
     ScheduleController, StudyGeneratorController, TaskController, ProgressController, NotificationController, StoryController};
 use App\Http\Controllers\Admin\AdminController;
@@ -15,6 +16,11 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
     Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
     Route::delete('/groups/{group}/leave', [GroupController::class, 'leave'])->name('groups.leave');
+
+    Route::post('/groups/{group}/rating', [GroupRatingController::class, 'store'])->name('groups.rate');
+    Route::post('/groups/{group}/invite', [GroupMemberController::class, 'invite'])->name('groups.invite');
+    Route::patch('/groups/{group}/members/{user}', [GroupMemberController::class, 'setRole'])->name('groups.members.role');
+    Route::delete('/groups/{group}/members/{user}', [GroupMemberController::class, 'remove'])->name('groups.members.remove');
 
     Route::get('/members', [MemberController::class, 'index'])->name('members.index');
     Route::post('/presence', [MemberController::class, 'ping'])->name('presence.ping');

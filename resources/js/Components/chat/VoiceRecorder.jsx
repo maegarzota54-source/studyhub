@@ -64,15 +64,15 @@ export default function VoiceRecorder({ onSend, onCancel }) {
     );
 
     return (
-        <div className="flex items-center gap-3 rounded-xl bg-[#1B4322] px-3 py-2 text-[#EBF2FA]">
+        <div className="flex items-center gap-3 rounded-xl bg-[#12315F] px-3 py-2 text-[#F5EFE6]">
             <button type="button" onClick={onCancel} aria-label="Discard voice clip" title="Discard" className="rounded-full p-2 hover:bg-white/10"><Trash2 size={18} /></button>
             {phase === 'review' && clip ? (<>
                 <audio controls src={clip.url} className="h-9 min-w-0 flex-1" />
-                <button type="button" onClick={() => onSend(clip.file)} className="inline-flex items-center gap-2 rounded-lg bg-[#FBB02D] px-4 py-2 text-sm font-bold text-[#081C15] hover:brightness-95"><Send size={15} /> Send</button>
+                <button type="button" onClick={() => onSend(clip.file)} className="inline-flex items-center gap-2 rounded-lg bg-[#2EC4B6] px-4 py-2 text-sm font-bold text-[#0A1F44] hover:brightness-95"><Send size={15} /> Send</button>
             </>) : (<>
                 <span className="relative flex h-3 w-3"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" /></span>
                 <span className="flex-1 text-sm" aria-live="polite">{phase === 'starting' ? 'Allow the microphone…' : `Recording ${clock(secs)}`}</span>
-                <button type="button" onClick={stop} disabled={phase !== 'recording'} className="inline-flex items-center gap-2 rounded-lg bg-[#FBB02D] px-4 py-2 text-sm font-bold text-[#081C15] disabled:opacity-50"><Square size={14} /> Stop</button>
+                <button type="button" onClick={stop} disabled={phase !== 'recording'} className="inline-flex items-center gap-2 rounded-lg bg-[#2EC4B6] px-4 py-2 text-sm font-bold text-[#0A1F44] disabled:opacity-50"><Square size={14} /> Stop</button>
             </>)}
         </div>
     );

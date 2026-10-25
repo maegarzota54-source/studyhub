@@ -7,7 +7,7 @@ export default function Notifications({ items }) {
     const markAll = () => router.post(route('notifications.read'));
 
     const rows = items.map((n) => (
-        <div key={n.id} className={`px-5 py-3 text-sm ${n.read ? '' : 'bg-[#eef4ef] font-medium'}`}>
+        <div key={n.id} className={`px-5 py-3 text-sm ${n.read ? '' : 'bg-[#EEF3FA] font-medium'}`}>
             {n.url ? <Link href={n.url}>{n.message}</Link> : n.message}
             <span className="ml-2 text-xs text-gray-400">{n.ago}</span>
         </div>

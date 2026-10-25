@@ -9,8 +9,11 @@ import OnlineDot from '@/Components/OnlineDot';
 import SharedReader from '@/Components/SharedReader';
 import SessionCard from '@/Components/SessionCard';
 import StudyGeneratorModal from '@/Components/StudyGeneratorModal';
+import GroupRatingBox from '@/Components/GroupRatingBox';
+import MemberManager from '@/Components/MemberManager';
+import { StarDisplay } from '@/Components/Stars';
 
-export default function GroupShow({ group, isGroupAdmin, members, messages, modules, tasks, events, auth }) {
+export default function GroupShow({ group, isGroupAdmin, rating, members, messages, modules, tasks, events, auth }) {
   const [tab, setTab] = useState('chat');
   const [previewModuleId, setPreviewModuleId] = useState(null);
   const [studyModule, setStudyModule] = useState(null);
@@ -28,12 +31,13 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
       <Card className="mb-4">
         <p className="text-sm text-gray-500">{group.topic}{group.target_date && ` · target ${group.target_date}`}</p>
         <p className="mt-1 text-sm">{group.description}</p>
+        <div className="mt-2"><StarDisplay value={rating.avg} count={rating.count} /></div>
         <div className="mt-3 flex -space-x-2">
           {members.map((m) => <img key={m.id} src={m.avatar_url} title={m.name} alt={m.name} className="h-8 w-8 rounded-full border-2 border-white" />)}
         </div>
       </Card>
       <div className="mb-4 flex gap-1 border-b border-gray-200" role="tablist">
-        {['chat', 'modules', 'tasks', 'schedule'].map((t) => (
+        {['chat', 'modules', 'tasks', 'schedule', 'members'].map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm capitalize ${tab === t ? 'border-b-2 border-raspberry-600 font-semibold text-hunter-700' : 'text-gray-500'}`}>{t}</button>
         ))}
@@ -140,6 +144,12 @@ export default function GroupShow({ group, isGroupAdmin, members, messages, modu
         </div>
       )}
 
+      {tab === 'members' && (
+        <div className="space-y-4">
+          <MemberManager group={group} members={members} isGroupAdmin={isGroupAdmin} me={me} />
+          <GroupRatingBox group={group} rating={rating} />
+        </div>
+      )}
       {tab === 'tasks' && <div className="space-y-2">{tasks.length === 0 && <p className="text-sm text-gray-500">No tasks yet. Add one from the Tasks page.</p>}
         {tasks.map((t) => <Card key={t.id}><Link href={route('tasks.show', t.id)} className="block"><b className={`hover:text-hunter-700 ${t.status === 'completed' ? 'text-gray-400 line-through' : ''}`}>{t.title}</b> <span className="text-xs text-gray-500">{t.assignees.length ? t.assignees.map((a) => a.name).join(', ') : 'Unassigned'} · {t.status} · due {t.due_date ?? '—'} · {t.comments_count} comment(s)</span></Link></Card>)}</div>}
 

@@ -30,7 +30,7 @@ export function Panel({ title, action, children, className = '' }) {
     );
 }
 
-export function Kpi({ label, value, sub, Icon, tone = '#355E3B', href }) {
+export function Kpi({ label, value, sub, Icon, tone = '#12315F', href }) {
     const body = (
         <div className="flex items-start justify-between rounded-xl border border-gray-200 bg-white p-5 transition-shadow hover:shadow-md">
             <div>
@@ -44,23 +44,23 @@ export function Kpi({ label, value, sub, Icon, tone = '#355E3B', href }) {
     return href ? <Link href={href} className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E30B5C]">{body}</Link> : body;
 }
 
-const TONES = { green: ['#d6e5d9', '#2a4a2f'], pink: ['#fde7ef', '#C81E51'], gray: ['#E5E7EB', '#374151'], dark: ['#1F2937', '#fff'] };
+const TONES = { green: ['#D6E0EF', '#0E2A55'], pink: ['#fde7ef', '#C81E51'], gray: ['#E5E7EB', '#374151'], dark: ['#1F2937', '#fff'] };
 export const Badge = ({ tone = 'gray', children }) => (
     <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: TONES[tone][0], color: TONES[tone][1] }}>{children}</span>
 );
 
 export const Btn = ({ tone = 'ghost', className = '', ...p }) => (
-    <button className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${tone === 'danger' ? 'bg-[#E30B5C] text-white hover:bg-[#C81E51]' : tone === 'primary' ? 'bg-[#355E3B] text-white hover:bg-[#2a4a2f]' : 'border border-gray-300 bg-white text-[#1F2937] hover:bg-gray-100'} ${className}`} {...p} />
+    <button className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${tone === 'danger' ? 'bg-[#E30B5C] text-white hover:bg-[#C81E51]' : tone === 'primary' ? 'bg-[#12315F] text-white hover:bg-[#0E2A55]' : 'border border-gray-300 bg-white text-[#1F2937] hover:bg-gray-100'} ${className}`} {...p} />
 );
 
-export const inputCls = 'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-[#355E3B] focus:outline-none focus:ring-2 focus:ring-[#355E3B]/20';
+export const inputCls = 'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-[#12315F] focus:outline-none focus:ring-2 focus:ring-[#12315F]/20';
 
 export function Pager({ links }) {
     if (!links || links.length <= 3) return null;
     return (
         <nav className="flex flex-wrap gap-1 border-t border-gray-100 p-3" aria-label="Pagination">
             {links.map((l, i) => l.url
-                ? <Link key={i} href={l.url} preserveScroll className={`rounded-lg px-3 py-1 text-sm ${l.active ? 'bg-[#355E3B] font-semibold text-white' : 'hover:bg-gray-100'}`} dangerouslySetInnerHTML={{ __html: l.label }} />
+                ? <Link key={i} href={l.url} preserveScroll className={`rounded-lg px-3 py-1 text-sm ${l.active ? 'bg-[#12315F] font-semibold text-white' : 'hover:bg-gray-100'}`} dangerouslySetInnerHTML={{ __html: l.label }} />
                 : <span key={i} className="px-3 py-1 text-sm text-gray-400" dangerouslySetInnerHTML={{ __html: l.label }} />)}
         </nav>
     );
@@ -113,7 +113,7 @@ export default function AdminLayout({ title, crumbs = [], actions, children }) {
             {/* TOPBAR */}
             <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center gap-3 border-b border-gray-200 bg-white px-4">
                 <button className="rounded-lg p-2 hover:bg-gray-100 lg:hidden" onClick={() => setSide(!side)} aria-label="Toggle menu">{side ? <X size={20} /> : <Menu size={20} />}</button>
-                <Link href={route('admin.index')} className="flex items-center gap-2 font-bold text-[#355E3B]">
+                <Link href={route('admin.index')} className="flex items-center gap-2 font-bold text-[#12315F]">
                     <img src="/images/studyhub-logo.png" alt="" className="h-8 w-8 rounded-full" />
                     <span className="hidden sm:inline">StudyHub</span>
                     <span className="rounded bg-[#1F2937] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">Admin</span>
@@ -122,7 +122,7 @@ export default function AdminLayout({ title, crumbs = [], actions, children }) {
                 <div ref={box} className="relative mx-auto w-full max-w-md">
                     <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search users and groups" aria-label="Search users and groups"
-                        className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm focus:border-[#355E3B] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#355E3B]/20" />
+                        className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm focus:border-[#12315F] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#12315F]/20" />
                     {res && (
                         <div className="absolute left-0 right-0 top-11 max-h-80 overflow-y-auto rounded-xl border border-gray-200 bg-white py-2 shadow-xl">
                             {res.users.length === 0 && res.groups.length === 0 && <p className="px-4 py-2 text-sm text-gray-500">No matches.</p>}
@@ -175,15 +175,15 @@ export default function AdminLayout({ title, crumbs = [], actions, children }) {
             <main className="pt-14 lg:pl-60">
                 <div className="mx-auto max-w-7xl p-6">
                     <nav aria-label="Breadcrumb" className="mb-1 flex items-center gap-1 text-xs text-gray-500">
-                        <Link href={route('admin.index')} className="hover:text-[#355E3B]">Admin</Link>
+                        <Link href={route('admin.index')} className="hover:text-[#12315F]">Admin</Link>
                         {crumbs.map(([label, href]) => (
-                            <span key={label} className="flex items-center gap-1"><ChevronRight size={12} />{href ? <Link href={href} className="hover:text-[#355E3B]">{label}</Link> : <span className="text-[#1F2937]">{label}</span>}</span>
+                            <span key={label} className="flex items-center gap-1"><ChevronRight size={12} />{href ? <Link href={href} className="hover:text-[#12315F]">{label}</Link> : <span className="text-[#1F2937]">{label}</span>}</span>
                         ))}
                     </nav>
                     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                         <h1 className="text-2xl font-bold">{title}</h1>{actions}
                     </div>
-                    {flash?.success && <div role="status" className="mb-4 rounded-lg bg-[#d6e5d9] px-4 py-2 text-sm text-[#2a4a2f]">{flash.success}</div>}
+                    {flash?.success && <div role="status" className="mb-4 rounded-lg bg-[#D6E0EF] px-4 py-2 text-sm text-[#0E2A55]">{flash.success}</div>}
                     {children}
                 </div>
             </main>

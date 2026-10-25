@@ -20,8 +20,10 @@ class GroupExtrasController extends Controller
     // ------------------------------------------------------------------ Find / create / join
     public function find(Request $request) {
         $u = $request->user();
-        $groups = StudyGroup::query()->withCount('members')
+        $plain = !$request->hasAny(['q', 'skill_level', 'mode', 'recommended', 'topic', 'schedule']);   // no filter applied (page number does not count)
+        $groups = StudyGroup::query()->withCount('members')->withAvg('ratings', 'stars')->withCount('ratings')
             ->withExists(['members as is_member' => fn ($q) => $q->whereKey($u->id)])
+            ->whereDoesntHave('members', fn ($q) => $q->whereKey($u->id))   // circles I already joined live in My Groups
             ->with('members:users.id,users.name,users.avatar')
             ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))
             ->when($request->skill_level, fn ($q, $v) => $q->where('skill_level', $v))
@@ -34,40 +36,40 @@ class GroupExtrasController extends Controller
             ->orderByRaw('recommended_by is null')      // teacher-recommended circles first
             ->latest()->paginate(12)->withQueryString();
 
+        $suggested = $plain ? $this->suggested($u) : [];
         return Inertia::render('Groups/Index', [
             'mode' => 'find', 'groups' => $groups,
             'filters' => $request->only('q', 'skill_level', 'mode', 'recommended', 'topic', 'schedule'),
             'topics' => StudyGroup::select('topic')->groupBy('topic')->orderByRaw('count(*) desc')->limit(12)->pluck('topic'),
-            'suggested' => $request->hasAny(['q', 'skill_level', 'mode', 'recommended', 'topic', 'schedule', 'page']) ? [] : $this->suggested($u),
+            'suggested' => $suggested,
+            // When nothing matches the profile yet, still show something clear: popular / teacher-recommended circles.
+            'popular' => ($plain && count($suggested) === 0) ? $this->popular($u) : [],
+            'profileIncomplete' => empty($u->subjects) && empty($u->availability) && empty($u->study_preferences),
+            'partners' => $plain ? \App\Support\GroupMatcher::partners($u, 4) : [],
         ]);
     }
 
     /**
-     * "Suggested for you": circles the student has not joined, scored on level, study mode, goal words,
-     * topics of circles they already joined, teacher recommendation and a session this week.
+     * "Suggested for you": the top 3 open circles, scored by App\Support\GroupMatcher on the student's subjects,
+     * free days / time of day, skill level, goal, study mode, topics of joined circles, teacher recommendation
+     * and a session this week.
      */
     private function suggested($u): array {
-        $prefs = $u->study_preferences ?? [];
-        $goalWords = collect(preg_split('/\W+/u', mb_strtolower((string) ($prefs['goal'] ?? ''))))->filter(fn ($w) => mb_strlen($w) >= 4)->values();
-        $myTopics = $u->groups()->pluck('topic')->map(fn ($t) => mb_strtolower($t))->all();
-        $soon = DB::table('schedules')->where('visibility', 'public')->whereBetween('starts_at', [now(), now()->addDays(7)])
-            ->pluck('study_group_id')->unique()->flip();
+        return \App\Support\GroupMatcher::suggest($u, 3)->all();
+    }
 
-        return StudyGroup::withCount('members')->with('members:users.id,users.name,users.avatar')
-            ->whereDoesntHave('members', fn ($q) => $q->whereKey($u->id))->latest()->limit(100)->get()
-            ->filter(fn ($g) => $g->members_count < $g->max_members)
-            ->map(function ($g) use ($prefs, $goalWords, $myTopics, $soon) {
-                $score = 0; $why = [];
-                if (!empty($prefs['skill_level']) && $prefs['skill_level'] === $g->skill_level) { $score += 3; $why[] = 'Matches your level'; }
-                if (!empty($prefs['mode']) && $prefs['mode'] === $g->mode) { $score += 2; $why[] = 'Your study mode'; }
-                $hay = mb_strtolower("{$g->title} {$g->topic} {$g->description}");
-                if ($goalWords->contains(fn ($w) => str_contains($hay, $w))) { $score += 4; $why[] = 'Fits your goal'; }
-                if (in_array(mb_strtolower($g->topic), $myTopics, true)) { $score += 2; $why[] = 'Same topic as your circles'; }
-                if ($g->recommended_by) { $score += 2; $why[] = "Recommended by {$g->recommended_by}"; }
-                if (isset($soon[$g->id])) { $score += 1; $why[] = 'Session this week'; }
-                $g->setAttribute('score', $score); $g->setAttribute('why', $why); $g->setAttribute('is_member', false);
-                return $g;
-            })->filter(fn ($g) => $g->score > 0)->sortByDesc('score')->take(3)->values()->all();
+    /** Fallback for "Suggested for you": open circles the student has not joined, teacher-recommended and biggest first. */
+    private function popular($u): array {
+        return StudyGroup::query()->withCount(['members', 'ratings'])->withAvg('ratings', 'stars')
+            ->with('members:users.id,users.name,users.avatar')
+            ->whereDoesntHave('members', fn ($q) => $q->whereKey($u->id))
+            ->orderByRaw('recommended_by is null')->orderByDesc('members_count')->latest()
+            ->limit(40)->get()
+            ->filter(fn ($g) => $g->members_count < $g->max_members)->take(3)
+            ->each(function ($g) {
+                $g->setAttribute('is_member', false);
+                $g->setAttribute('why', [$g->recommended_by ? "Recommended by {$g->recommended_by}" : 'Popular circle']);
+            })->values()->all();
     }
 
     public function store(Request $request) {
@@ -78,6 +80,8 @@ class GroupExtrasController extends Controller
             'skill_level' => 'required|in:beginner,intermediate,advanced', 'mode' => 'required|in:online,in-person',
             'max_members' => "required|integer|min:2|max:$max",
             'cover' => 'nullable|image|max:3072',
+            'meeting_days' => 'nullable|array', 'meeting_days.*' => 'in:Mon,Tue,Wed,Thu,Fri,Sat,Sun',
+            'meeting_time' => 'nullable|in:morning,afternoon,evening',
         ]);
         $cover = $request->file('cover')?->store('group-covers', 'public');
         $group = StudyGroup::create(Arr::except($data, ['cover']) + ['owner_id' => $request->user()->id, 'cover' => $cover]);
@@ -85,17 +89,18 @@ class GroupExtrasController extends Controller
         return to_route('groups.show', $group)->with('success', 'Study circle created.');
     }
 
-    /** Stays on the Find Groups page so the button can flip to "Joined". */
+    /** Joining takes the student straight to My Groups, where the new circle is listed first. */
     public function join(Request $request, StudyGroup $group) {
         $u = $request->user();
-        if (!$group->hasMember($u)) {
-            if ($group->members()->count() >= $group->max_members) {
-                return back()->withErrors(['join' => 'This circle is full.']);
-            }
-            $group->members()->attach($u->id, ['role' => 'member']);
-            $group->owner->notify(new StudyHubNotice("{$u->name} joined {$group->title}", route('groups.show', $group, false)));
+        if ($group->hasMember($u)) {
+            return to_route('groups.index')->with('success', "You are already in {$group->title}.");
         }
-        return back();
+        if ($group->members()->count() >= $group->max_members) {
+            return back()->withErrors(['join' => 'This circle is full.']);
+        }
+        $group->members()->attach($u->id, ['role' => 'member']);
+        $group->owner->notify(new StudyHubNotice("{$u->name} joined {$group->title}", route('groups.show', $group, false)));
+        return to_route('groups.index')->with('success', "You joined {$group->title}! It is now in My Groups.");
     }
 
     public function cover(Request $request, StudyGroup $group) {
@@ -133,7 +138,7 @@ class GroupExtrasController extends Controller
                 'names' => $r->pluck('name')->take(3)->values(),
                 'people' => $r->take(5)->map(fn ($x) => [
                     'id' => $x->uid, 'name' => $x->name,
-                    'avatar_url' => $x->avatar ? '/storage/'.$x->avatar : 'https://ui-avatars.com/api/?background=1B4322&color=fff&name='.urlencode($x->name),
+                    'avatar_url' => $x->avatar ? '/storage/'.$x->avatar : 'https://ui-avatars.com/api/?background=0A1F44&color=fff&name='.urlencode($x->name),
                 ])->values(),
             ];
         }

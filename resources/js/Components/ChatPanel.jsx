@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
-import { Check, Copy, Download, Eye, File as FileIcon, Flag, FolderOpen, Forward, Mic, Paperclip, Pencil, Reply, Save, Search, Send, Smile, X } from 'lucide-react';
+import { Check, Copy, Download, Eye, File as FileIcon, Flag, Forward, Mic, Paperclip, Pencil, Reply, Save, Search, Send, Smile, X } from 'lucide-react';
 import { api } from '@/lib/api';
 import { inputCls } from '@/Layouts/AppLayout';
 import EmojiPicker from '@/Components/chat/EmojiPicker';
@@ -19,7 +19,7 @@ const openInReader = (m) => window.dispatchEvent(new CustomEvent('reader:open', 
 const KINDS = { message: 'Message', comment: 'Comment', answer: 'Answer', suggestion: 'Suggestion' };
 
 const Act = ({ onClick, label, danger = false, children }) => (
-    <button type="button" onClick={onClick} aria-label={label} title={label} className={`rounded p-1 opacity-70 transition hover:bg-black/10 hover:opacity-100 ${danger ? 'hover:text-[#C81E51]' : 'hover:text-[#038666]'}`}>{children}</button>
+    <button type="button" onClick={onClick} aria-label={label} title={label} className={`rounded p-1 opacity-70 transition hover:bg-black/10 hover:opacity-100 ${danger ? 'hover:text-[#C81E51]' : 'hover:text-[#0B8A94]'}`}>{children}</button>
 );
 
 async function copyText(text) {
@@ -53,22 +53,22 @@ function Bubble({ m, me, threaded, onReply, onForward, nested = false }) {
                 <img src={avatar} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
                 <div className={`flex max-w-[78%] flex-col ${mine ? 'items-end' : 'items-start'}`}>
                     <p className="mb-0.5 flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
-                        {!mine && <b className="text-[#081C15]">{m.sender.name}</b>}
-                        {m.kind !== 'message' && <span className="rounded bg-[#FBB02D]/25 px-1.5 font-semibold text-[#7a5200]">{KINDS[m.kind]}</span>}
+                        {!mine && <b className="text-[#0A1F44]">{m.sender.name}</b>}
+                        {m.kind !== 'message' && <span className="rounded bg-[#2EC4B6]/25 px-1.5 font-semibold text-[#7a5200]">{KINDS[m.kind]}</span>}
                         <span>{time}</span>{m.edited_at && <span className="italic">edited</span>}
                     </p>
 
-                    <div className={`rounded-2xl px-3.5 py-2 text-sm shadow-sm ${mine ? 'rounded-br-sm bg-[#1B4322] text-[#EBF2FA]' : 'rounded-bl-sm bg-[#dbe7e0] text-[#081C15]'}`}>
+                    <div className={`rounded-2xl px-3.5 py-2 text-sm shadow-sm ${mine ? 'rounded-br-sm bg-[#12315F] text-[#F5EFE6]' : 'rounded-bl-sm bg-[#DCE5F0] text-[#0A1F44]'}`}>
                         {m.forwarded_from && <p className="mb-1 flex items-center gap-1 text-[11px] italic opacity-80"><Forward size={11} aria-hidden="true" /> Forwarded from {m.forwarded_from}</p>}
 
                         {editing ? (
                             <div className="w-64 max-w-full">
                                 <textarea autoFocus rows={3} value={draft} onChange={(e) => setDraft(e.target.value)} aria-label="Edit message"
                                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(); } if (e.key === 'Escape') setEditing(false); }}
-                                    className="w-full rounded-lg border-0 bg-white/90 p-2 text-sm text-[#081C15] focus:ring-2 focus:ring-[#FBB02D]" />
+                                    className="w-full rounded-lg border-0 bg-white/90 p-2 text-sm text-[#0A1F44] focus:ring-2 focus:ring-[#2EC4B6]" />
                                 <div className="mt-1 flex justify-end gap-2 text-xs">
                                     <button type="button" onClick={() => { setEditing(false); setDraft(m.body ?? ''); }} className="rounded px-2 py-1 hover:bg-white/10">Cancel</button>
-                                    <button type="button" onClick={saveEdit} disabled={saving} className="rounded bg-[#FBB02D] px-3 py-1 font-bold text-[#081C15] disabled:opacity-60">{saving ? 'Saving…' : 'Save'}</button>
+                                    <button type="button" onClick={saveEdit} disabled={saving} className="rounded bg-[#2EC4B6] px-3 py-1 font-bold text-[#0A1F44] disabled:opacity-60">{saving ? 'Saving…' : 'Save'}</button>
                                 </div>
                             </div>
                         ) : m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
@@ -84,13 +84,13 @@ function Bubble({ m, me, threaded, onReply, onForward, nested = false }) {
 
                     <div className="mt-1 flex flex-wrap items-center gap-0.5 text-xs text-gray-500">
                         {threaded && !nested && <Act onClick={() => onReply(m)} label="Reply"><Reply size={14} /></Act>}
-                        {m.body && <Act onClick={async () => setCopied(await copyText(m.body))} label={copied ? 'Copied' : 'Copy text'}>{copied ? <Check size={14} className="text-[#038666]" /> : <Copy size={14} />}</Act>}
+                        {m.body && <Act onClick={async () => setCopied(await copyText(m.body))} label={copied ? 'Copied' : 'Copy text'}>{copied ? <Check size={14} className="text-[#0B8A94]" /> : <Copy size={14} />}</Act>}
                         <Act onClick={() => onForward(m)} label="Forward"><Forward size={14} /></Act>
                         {mine && m.body && !editing && <Act onClick={() => { setDraft(m.body); setEditing(true); }} label="Edit"><Pencil size={14} /></Act>}
                         {threaded && m.attachment_name && canPreview(m.attachment_name) && <Act onClick={() => openInReader(m)} label="Preview together"><Eye size={14} /></Act>}
                         {m.attachment_name && !isVoice(m.attachment_name) && <Act onClick={() => router.post(route('messages.save', m.id), {}, { preserveScroll: true })} label="Save to Notes & Files"><Save size={14} /></Act>}
                         {!mine && <Act danger onClick={() => router.post(route('messages.flag', m.id), {}, { preserveScroll: true })} label="Report"><Flag size={14} /></Act>}
-                        {copied && <span className="ml-1 text-[#038666]" role="status">Copied</span>}
+                        {copied && <span className="ml-1 text-[#0B8A94]" role="status">Copied</span>}
                     </div>
                 </div>
             </div>
@@ -182,8 +182,8 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
         if (!el) return;
         stick.current = false;
         el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        el.classList.add('ring-2', 'ring-[#FBB02D]', 'rounded-xl');
-        setTimeout(() => el.classList.remove('ring-2', 'ring-[#FBB02D]', 'rounded-xl'), 1800);
+        el.classList.add('ring-2', 'ring-[#2EC4B6]', 'rounded-xl');
+        setTimeout(() => el.classList.remove('ring-2', 'ring-[#2EC4B6]', 'rounded-xl'), 1800);
     };
 
     /* ---------- composer ---------- */
@@ -226,11 +226,11 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
                 </>)}
             </div>
             {searchOpen && results !== null && (
-                <div className="absolute inset-x-0 top-11 z-10 max-h-64 overflow-y-auto border-b border-gray-200 bg-[#EBF2FA] shadow-lg" role="listbox" aria-label="Search results">
+                <div className="absolute inset-x-0 top-11 z-10 max-h-64 overflow-y-auto border-b border-gray-200 bg-[#F5EFE6] shadow-lg" role="listbox" aria-label="Search results">
                     {results.length === 0 && <p className="p-3 text-sm text-gray-500">No messages found.</p>}
                     {results.map((r) => (
                         <button key={r.id} type="button" role="option" onClick={() => jumpTo(r.thread_id)} className="block w-full border-b border-black/5 px-3 py-2 text-left text-sm hover:bg-black/5">
-                            <span className="flex justify-between text-xs text-gray-500"><b className="text-[#081C15]">{r.sender}</b><span>{new Date(r.at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span></span>
+                            <span className="flex justify-between text-xs text-gray-500"><b className="text-[#0A1F44]">{r.sender}</b><span>{new Date(r.at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span></span>
                             <span className="block truncate">{r.body || `📎 ${r.attachment_name}`}</span>
                         </button>
                     ))}
@@ -266,9 +266,9 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
                         <label className="flex cursor-pointer items-center rounded-lg border border-gray-300 p-2 hover:bg-black/5" title="Attach a file" aria-label="Attach a file">
                             <Paperclip size={16} /><input ref={fileInput} type="file" className="sr-only" onChange={(e) => form.setData('attachment', e.target.files[0] ?? null)} />
                         </label>
-                        {dest && <button type="button" onClick={() => setPicking(true)} aria-label="Share from Notes & Files" title="Share from Notes & Files" className="rounded-lg border border-gray-300 p-2 hover:bg-black/5"><FolderOpen size={16} /></button>}
+                        
                         <button type="button" onClick={() => setRecording(true)} aria-label="Record a voice clip" title="Voice clip" className="rounded-lg border border-gray-300 p-2 hover:bg-black/5"><Mic size={16} /></button>
-                        <button disabled={form.processing} className="inline-flex items-center gap-2 rounded-lg bg-[#FBB02D] px-4 py-2 text-sm font-bold text-[#081C15] transition-all hover:brightness-95 active:scale-95 disabled:opacity-60">
+                        <button disabled={form.processing} className="inline-flex items-center gap-2 rounded-lg bg-[#2EC4B6] px-4 py-2 text-sm font-bold text-[#0A1F44] transition-all hover:brightness-95 active:scale-95 disabled:opacity-60">
                             <Send size={15} aria-hidden="true" /> Send
                         </button>
                     </div>
@@ -277,7 +277,7 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
                 {form.data.attachment && !recording && (
                     <div className="mt-2 flex items-center gap-3 rounded-xl border border-gray-200 bg-black/5 p-2">
                         {thumb ? <img src={thumb} alt="Preview of the file you are sending" className="h-14 w-14 rounded-lg object-cover" />
-                            : <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#1B4322] text-[#FBB02D]"><FileIcon size={22} aria-hidden="true" /></span>}
+                            : <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#12315F] text-[#2EC4B6]"><FileIcon size={22} aria-hidden="true" /></span>}
                         <span className="min-w-0 flex-1 text-sm"><b className="block truncate">{form.data.attachment.name}</b><span className="text-xs text-gray-500">{bytes(form.data.attachment.size)} · ready to send</span></span>
                         <button type="button" onClick={clearFile} aria-label="Remove attachment" className="rounded-full p-1.5 hover:bg-black/10"><X size={16} /></button>
                     </div>

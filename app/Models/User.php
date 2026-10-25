@@ -14,7 +14,7 @@ class User extends Authenticatable
 
     protected function casts(): array {
         return ['email_verified_at' => 'datetime', 'password' => 'hashed',
-                'study_preferences' => 'array', 'last_seen_at' => 'datetime', 'is_suspended' => 'boolean'];
+                'study_preferences' => 'array', 'subjects' => 'array', 'availability' => 'array', 'privacy_consent_at' => 'datetime', 'last_seen_at' => 'datetime', 'is_suspended' => 'boolean'];
     }
     public function isAdmin(): bool { return $this->role === 'admin'; }
     public function groups() { return $this->belongsToMany(StudyGroup::class, 'group_members')->withPivot('role')->withTimestamps(); }
@@ -33,6 +33,6 @@ class User extends Authenticatable
         if ($this->avatar && $this->id) {
             return route('profile.avatar', $this->id, false).'?v='.substr(md5($this->avatar), 0, 8);
         }
-        return 'https://ui-avatars.com/api/?background=355E3B&color=fff&name='.urlencode($this->name ?? 'User');
+        return 'https://ui-avatars.com/api/?background=0A1F44&color=fff&name='.urlencode($this->name ?? 'User');
     }
 }
