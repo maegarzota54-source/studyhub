@@ -1,31 +1,21 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Message;
-use App\Models\NoteFile;
-use App\Models\Setting;
-use App\Models\StudyGroup;
-use App\Models\StudySession;
-use App\Models\User;
-use App\Notifications\StudyHubNotice;
+use App\Models\{Message, ModerationLog, NoteFile, Setting, StudyGroup, StudySession, User};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class AdminController extends Controller
 {
     /** Every admin page also gets the open-report count for the sidebar badge. */
-    private function page(string $component, array $props = [])
-    {
+    private function page(string $component, array $props = []) {
         return Inertia::render($component, $props + ['openReports' => Message::where('is_flagged', true)->count()]);
     }
 
     // ---------- Dashboard ----------
-    public function index()
-    {
+    public function index() {
         $days = collect(range(13, 0))->map(fn ($i) => now()->subDays($i)->startOfDay());
         $from = $days->first();
         $signups = User::where('created_at', '>=', $from)->selectRaw('date(created_at) as d, count(*) as c')->groupBy('d')->pluck('c', 'd');
@@ -65,13 +55,9 @@ class AdminController extends Controller
     }
 
     /** Topbar live search (JSON). */
-    public function search(Request $request)
-    {
+    public function search(Request $request) {
         $s = trim((string) $request->q);
-        if (mb_strlen($s) < 2) {
-            return response()->json(['users' => [], 'groups' => []]);
-        }
-
+        if (mb_strlen($s) < 2) return response()->json(['users' => [], 'groups' => []]);
         return response()->json([
             'users' => User::where('name', 'like', "%$s%")->orWhere('email', 'like', "%$s%")->limit(5)->get(['id', 'name', 'email']),
             'groups' => StudyGroup::where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")->limit(5)->get(['id', 'title', 'topic']),
@@ -79,151 +65,122 @@ class AdminController extends Controller
     }
 
     // ---------- Users ----------
-    public function users(Request $request)
-    {
+    public function users(Request $request) {
         $users = User::withCount('groups')
             ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('name', 'like', "%$s%")->orWhere('email', 'like', "%$s%")))
             ->when($request->role, fn ($q, $r) => $q->where('role', $r))
             ->when($request->status === 'suspended', fn ($q) => $q->where('is_suspended', true))
             ->when($request->status === 'active', fn ($q) => $q->where('is_suspended', false))
             ->latest()->paginate(12)->withQueryString();
-
         return $this->page('Admin/Users', [
             'users' => $users, 'filters' => $request->only('q', 'role', 'status'),
             'totals' => ['all' => User::count(), 'admins' => User::where('role', 'admin')->count(), 'suspended' => User::where('is_suspended', true)->count()],
         ]);
     }
 
-    public function toggleSuspend(Request $request, User $user)
-    {
+    public function toggleSuspend(Request $request, User $user) {
         abort_if($user->id === $request->user()->id, 422, 'You cannot suspend yourself.');
         abort_if($user->isAdmin(), 422, 'Demote this admin before suspending.');
-        $user->forceFill(['is_suspended' => ! $user->is_suspended])->save();
-
+        $user->forceFill(['is_suspended' => !$user->is_suspended])->save();
+        ModerationLog::record($request->user(), $user->is_suspended ? 'suspended' : 'reinstated', 'user', $user->id, ($user->is_suspended ? 'Suspended ' : 'Reinstated ')."{$user->name} ({$user->email})");
         return back()->with('success', $user->is_suspended ? "{$user->name} was suspended." : "{$user->name} was reinstated.");
     }
 
-    public function setRole(Request $request, User $user)
-    {
+    public function setRole(Request $request, User $user) {
         abort_if($user->id === $request->user()->id, 422, 'You cannot change your own role.');
         $data = $request->validate(['role' => 'required|in:student,admin']);
         $user->forceFill($data)->save();
-
+        ModerationLog::record($request->user(), 'role_changed', 'user', $user->id, "Made {$user->name} a {$data['role']}");
         return back()->with('success', "{$user->name} is now ".($user->role === 'admin' ? 'an admin.' : 'a student.'));
     }
 
-    public function destroyUser(Request $request, User $user)
-    {
+    public function destroyUser(Request $request, User $user) {
         abort_if($user->id === $request->user()->id, 422, 'You cannot delete yourself.');
         abort_if($user->isAdmin(), 422, 'Demote this admin before deleting.');
+        ModerationLog::record($request->user(), 'deleted', 'user', $user->id, "Deleted account {$user->name} ({$user->email})", [
+            'name' => $user->name, 'email' => $user->email, 'circles_joined' => $user->groups()->count(), 'messages_sent' => Message::where('sender_id', $user->id)->count(),
+        ]);
         $user->delete();
-
         return back()->with('success', 'User deleted.');
     }
 
     // ---------- Groups ----------
-    
     public function groups(Request $request) {
-    $groups = StudyGroup::withCount(['members', 'messages', 'ratings'])->withAvg('ratings', 'stars')->with('owner:id,name')
-        ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))
-        ->latest()->paginate(12)->withQueryString();
-    return $this->page('Admin/Groups', ['groups' => $groups, 'filters' => $request->only('q')]);
-}
+        $groups = StudyGroup::withCount(['members', 'messages', 'ratings'])->withAvg('ratings', 'stars')->with('owner:id,name')
+            ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))
+            ->latest()->paginate(12)->withQueryString();
+        return $this->page('Admin/Groups', ['groups' => $groups, 'filters' => $request->only('q')]);
+    }
 
-    public function destroyGroup(StudyGroup $group)
-    {
+    public function destroyGroup(Request $request, StudyGroup $group) {
+        ModerationLog::record($request->user(), 'deleted', 'group', $group->id, "Deleted circle “{$group->title}”", [
+            'title' => $group->title, 'topic' => $group->topic, 'members' => $group->members()->count(), 'messages' => $group->messages()->count(),
+        ]);
         $group->delete();
-
         return back()->with('success', 'Group deleted.');
     }
 
     // ---------- Reports (flagged messages) ----------
-    public function reports()
-    {
+    public function reports() {
         return $this->page('Admin/Reports', [
-            'flagged' => Message::where('is_flagged', true)->with(['sender:id,name,email,is_suspended', 'group:id,title', 'recipient:id,name'])->latest('updated_at')->get(),
+            'flagged' => Message::where('is_flagged', true)->with(['sender:id,name,email,is_suspended', 'group:id,title', 'recipient:id,name', 'reporter:id,name'])->latest('updated_at')->get(),
+            // permanent trail of what admins did, newest first
+            'history' => ModerationLog::with('admin:id,name')->latest()->limit(30)->get(),
         ]);
     }
-
-    public function clearFlag(Message $message)
-    {
-        $message->update(['is_flagged' => false]);
-
+    /** Snapshot of a message, kept in the moderation history even after the message itself is gone. */
+    private function snapshot(Message $m): array {
+        $m->loadMissing(['sender:id,name,email', 'group:id,title', 'reporter:id,name']);
+        return [
+            'body' => $m->body, 'attachment_name' => $m->attachment_name, 'sender' => $m->sender?->name, 'sender_email' => $m->sender?->email,
+            'circle' => $m->group?->title, 'sent_at' => $m->created_at?->toDateTimeString(), 'reported_by' => $m->reporter?->name, 'reported_at' => $m->flagged_at?->toDateTimeString(),
+        ];
+    }
+    public function clearFlag(Request $request, Message $message) {
+        ModerationLog::record($request->user(), 'dismissed', 'message', $message->id, 'Dismissed a report on a message from '.($message->sender?->name ?? 'a student'), $this->snapshot($message));
+        $message->update(['is_flagged' => false, 'flagged_by' => null, 'flagged_at' => null]);
         return back()->with('success', 'Report dismissed.');
     }
-
-    public function destroyMessage(Message $message)
-    {
-        if ($message->attachment_path) {
-            Storage::delete($message->attachment_path);
-        }
+    public function destroyMessage(Request $request, Message $message) {
+        // the record is saved first, so removing the message never erases the history
+        ModerationLog::record($request->user(), 'removed', 'message', $message->id, 'Removed a message from '.($message->sender?->name ?? 'a student'), $this->snapshot($message));
+        if ($message->attachment_path) Storage::delete($message->attachment_path);
         $message->delete();
-
-        return back()->with('success', 'Message removed.');
+        return back()->with('success', 'Message removed. A copy is kept in the moderation history.');
     }
 
     // ---------- Content (notes, files, modules) ----------
-    public function content(Request $request)
-    {
+    public function content(Request $request) {
         $items = NoteFile::with(['user:id,name', 'group:id,title'])
             ->when($request->q, fn ($q, $s) => $q->where('title', 'like', "%$s%"))
             ->when($request->kind, fn ($q, $k) => $q->where('kind', $k))
             ->latest()->paginate(12)->withQueryString();
-
         return $this->page('Admin/Content', ['items' => $items, 'filters' => $request->only('q', 'kind')]);
     }
-
-    public function downloadFile(NoteFile $file)
-    {
+    public function downloadFile(NoteFile $file) {
         abort_unless($file->path, 404);
-
         return Storage::download($file->path, $file->title);
     }
-
-    public function destroyFile(NoteFile $file)
-    {
-        if ($file->path) {
-            Storage::delete($file->path);
-        }
+    public function destroyFile(Request $request, NoteFile $file) {
+        ModerationLog::record($request->user(), 'deleted', 'file', $file->id, "Deleted content “{$file->title}”", ['title' => $file->title, 'kind' => $file->kind, 'owner_id' => $file->user_id]);
+        if ($file->path) Storage::delete($file->path);
         $file->delete();
-
         return back()->with('success', 'Content deleted.');
     }
 
     // ---------- Settings ----------
-    public function settings()
-    {
+    public function settings() {
         return $this->page('Admin/Settings', ['settings' => [
             'announcement' => Setting::get('announcement', ''),
             'announcement_enabled' => Setting::get('announcement_enabled', '0') === '1',
             'max_group_size' => (int) Setting::get('max_group_size', 50),
         ]]);
     }
-
-    public function saveSettings(Request $request)
-    {
+    public function saveSettings(Request $request) {
         $d = $request->validate(['announcement' => 'nullable|string|max:300', 'announcement_enabled' => 'boolean', 'max_group_size' => 'required|integer|min:2|max:200']);
-        $announcement = trim($d['announcement'] ?? '');
-        $announcementEnabled = $request->boolean('announcement_enabled');
-
-        DB::transaction(function () use ($announcement, $announcementEnabled, $d): void {
-            Setting::put('announcement', $announcement);
-            Setting::put('announcement_enabled', $announcementEnabled ? '1' : '0');
-            Setting::put('max_group_size', $d['max_group_size']);
-
-            if (! $announcementEnabled || $announcement === '') {
-                Setting::put('announcement_last_notified', '');
-            } elseif ($announcement !== Setting::get('announcement_last_notified', '')) {
-                User::query()->where('role', 'student')->each(
-                    fn (User $student) => $student->notify(new StudyHubNotice(
-                        "Admin announcement: {$announcement}",
-                        route('notifications.index', [], false),
-                    )),
-                );
-                Setting::put('announcement_last_notified', $announcement);
-            }
-        });
-
+        Setting::put('announcement', $d['announcement'] ?? '');
+        Setting::put('announcement_enabled', $d['announcement_enabled'] ? '1' : '0');
+        Setting::put('max_group_size', $d['max_group_size']);
         return back()->with('success', 'Settings saved.');
     }
 }

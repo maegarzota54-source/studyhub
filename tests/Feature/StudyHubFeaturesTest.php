@@ -75,6 +75,40 @@ class StudyHubFeaturesTest extends TestCase
             ->has('suggested', 0)->has('popular', 1)->where('popular.0.id', $g->id)->where('profileIncomplete', true));
     }
 
+    private function admin(): \App\Models\User { $a = $this->student(); $a->forceFill(['role' => 'admin'])->save(); return $a; }
+
+    public function test_reporting_records_who_reported_and_removal_keeps_a_history(): void {
+        $owner = $this->student(); $g = $this->circle($owner);
+        $bad = $this->student(); $g->members()->attach($bad->id, ['role' => 'member']);
+        $m = \App\Models\Message::create(['sender_id' => $bad->id, 'study_group_id' => $g->id, 'kind' => 'message', 'body' => 'rude words']);
+        $this->actingAs($owner)->post("/messages/{$m->id}/flag")->assertSessionHasNoErrors();
+        $this->assertSame($owner->id, $m->fresh()->flagged_by);
+
+        $admin = $this->admin();
+        $this->actingAs($admin)->get('/admin/reports')->assertInertia(fn (Assert $p) => $p->where('flagged.0.reporter.name', $owner->name));
+        $this->actingAs($admin)->delete("/admin/messages/{$m->id}")->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('messages', ['id' => $m->id]);                       // gone from the chat
+        $log = \App\Models\ModerationLog::where('action', 'removed')->firstOrFail();   // but the record is kept
+        $this->assertSame('rude words', $log->details['body']);
+        $this->assertSame($bad->email, $log->details['sender_email']);
+        $this->assertSame($admin->id, $log->admin_id);
+        $this->actingAs($admin)->get('/admin/reports')->assertInertia(fn (Assert $p) => $p->where('history.0.action', 'removed'));
+    }
+
+    public function test_dismissing_a_report_and_suspending_are_logged(): void {
+        $owner = $this->student(); $g = $this->circle($owner);
+        $other = $this->student(); $g->members()->attach($other->id, ['role' => 'member']);
+        $m = \App\Models\Message::create(['sender_id' => $other->id, 'study_group_id' => $g->id, 'kind' => 'message', 'body' => 'hello']);
+        $this->actingAs($owner)->post("/messages/{$m->id}/flag");
+        $admin = $this->admin();
+        $this->actingAs($admin)->post("/admin/messages/{$m->id}/clear");
+        $this->assertFalse($m->fresh()->is_flagged);
+        $this->assertDatabaseHas('messages', ['id' => $m->id]);
+        $this->actingAs($admin)->patch("/admin/users/{$other->id}/suspend");
+        $this->assertSame(['dismissed', 'suspended'], \App\Models\ModerationLog::orderBy('id')->pluck('action')->all());
+    }
+
     public function test_matching_rewards_teacher_recommendation_and_topics_of_joined_circles(): void {
         $owner = $this->student();
         $joined = $this->circle($owner, ['title' => 'Alpha', 'topic' => 'Networking']);

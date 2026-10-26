@@ -15,8 +15,7 @@ const NAV = [
 const NAV_POSITION = 'side';
 
 export default function AppLayout({ title, children }) {
-  const { auth, unread, flash, announcement, peerNamespace, recent_notifications: recentNotifications, recent: legacyRecent = [] } = usePage().props;
-  const recent = recentNotifications ?? legacyRecent;
+  const { auth, unread, flash, announcement, peerNamespace, recent = [] } = usePage().props;
   const [panel, setPanel] = useState(null);  // which header dropdown is open: 'bell' | 'profile' | null
   const [open, setOpen] = useState(false);   // phone menu (hamburger)
 
@@ -135,7 +134,6 @@ export default function AppLayout({ title, children }) {
     ? <div role="status" className="bg-[#E30B5C] px-4 py-3 text-sm font-medium text-white md:px-6">{announcement}</div>
     : null;
 
-  
   if (isTop) {
     return (
       <div className="flex min-h-screen flex-col bg-cool-100 text-slate-900">
@@ -151,8 +149,6 @@ export default function AppLayout({ title, children }) {
         </header>
         {titleStrip}{flashBar}{announcementBar}
         <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 p-3 sm:p-4 md:p-6 focus:outline-none">{children}</main>
-        
-
         <CallOverlay />
       </div>
     );

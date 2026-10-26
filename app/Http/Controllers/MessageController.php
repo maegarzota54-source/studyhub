@@ -387,7 +387,7 @@ class MessageController extends Controller
     }
     public function flag(Request $request, Message $message) {
         $this->authorizeView($request, $message);
-        $message->update(['is_flagged' => true]);
+           $message->update(['is_flagged' => true, 'flagged_by' => $request->user()->id, 'flagged_at' => now()]);
         return back()->with('success', 'Reported to the admins.');
     }
 }

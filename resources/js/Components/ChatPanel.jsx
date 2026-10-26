@@ -99,10 +99,22 @@ function Bubble({ m, me, threaded, onReply, onForward, nested = false }) {
     );
 }
 
+const draftKey = (url) => `sh-draft:${url}`;
+const loadDraft = (url) => { try { return localStorage.getItem(draftKey(url)) || ''; } catch { return ''; } };
+const saveDraft = (url, v) => { try { v ? localStorage.setItem(draftKey(url), v) : localStorage.removeItem(draftKey(url)); } catch { /* storage unavailable */ } };
+
 /** Shared by group chat and DMs. `channel` is the private Echo channel name; `postUrl` the form target. */
 export default function ChatPanel({ messages, channel, postUrl, only = ['messages'], threaded = false }) {
     const me = usePage().props.auth.user;
-    const form = useForm({ body: '', kind: 'message', parent_id: null, attachment: null });
+    const form = useForm({ body: loadDraft(postUrl), kind: 'message', parent_id: null, attachment: null });
+    const [sendError, setSendError] = useState('');
+    // an unsent message survives a refresh, a dropped connection or a closed tab
+    useEffect(() => { saveDraft(postUrl, form.data.body); }, [postUrl, form.data.body]);
+    useEffect(() => {
+        const down = () => setSendError('Connection lost. Your message was not sent, but your text is kept. Press Send again when you are back online.');
+        window.addEventListener('inertia:exception', down);
+        return () => window.removeEventListener('inertia:exception', down);
+    }, []);
     const [replyTo, setReplyTo] = useState(null);
     const [older, setOlder] = useState([]), [more, setMore] = useState(true), [loadingOlder, setLoadingOlder] = useState(false), [fetchedHistory, setFetchedHistory] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false), [q, setQ] = useState(''), [results, setResults] = useState(null);
@@ -190,11 +202,12 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
     const clearFile = () => { form.setData('attachment', null); if (fileInput.current) fileInput.current.value = ''; };
     const send = (e) => {
         e.preventDefault();
-        stick.current = true;
+        stick.current = true; setSendError('');
         form.transform((d) => ({ ...d, parent_id: replyTo?.id ?? null }));
         form.post(postUrl, {
         forceFormData: true, preserveScroll: true,
-        onSuccess: () => { form.reset(); setReplyTo(null); if (fileInput.current) fileInput.current.value = ''; },
+        onSuccess: () => { form.reset(); saveDraft(postUrl, ''); setReplyTo(null); if (fileInput.current) fileInput.current.value = ''; },
+        onError: (errs) => setSendError(Object.values(errs)[0] || 'The message was not sent. Your text is kept, so you can try again.'),
 });
     };
     const sendVoice = (file) => {
@@ -273,6 +286,8 @@ export default function ChatPanel({ messages, channel, postUrl, only = ['message
                         </button>
                     </div>
                 )}
+
+                {sendError && <p role="alert" className="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">{sendError}</p>}
 
                 {form.data.attachment && !recording && (
                     <div className="mt-2 flex items-center gap-3 rounded-xl border border-gray-200 bg-black/5 p-2">
