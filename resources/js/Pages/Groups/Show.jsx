@@ -87,9 +87,9 @@ export default function GroupShow({ group, isGroupAdmin, rating, members, messag
         <div className="space-y-4">
           <Card>
             <form onSubmit={(e) => { e.preventDefault(); mod.post(route('files.store'), { forceFormData: true, onSuccess: () => mod.reset('title', 'body', 'file') }); }} className="grid gap-2 md:grid-cols-2">
-              <input className={inputCls} placeholder="Module title" value={mod.data.title} onChange={(e) => mod.setData('title', e.target.value)} />
+              <input aria-label="Module title" className={inputCls} placeholder="Module title" value={mod.data.title} onChange={(e) => mod.setData('title', e.target.value)} />
               <input type="file" className={inputCls} onChange={(e) => mod.setData('file', e.target.files[0])} />
-              <textarea className={`${inputCls} md:col-span-2`} placeholder="What should members learn from this?" value={mod.data.body} onChange={(e) => mod.setData('body', e.target.value)} />
+              <textarea aria-label="What should members learn from this?" className={`${inputCls} md:col-span-2`} placeholder="What should members learn from this?" value={mod.data.body} onChange={(e) => mod.setData('body', e.target.value)} />
               <Btn disabled={mod.processing}>Upload module</Btn>
             </form>
           </Card>

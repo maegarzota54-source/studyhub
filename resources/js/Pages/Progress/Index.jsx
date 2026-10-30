@@ -34,8 +34,8 @@ export default function Progress({ daily, weekHours, totalHours, groupBoards, re
           <Timer onStop={log} />
           <form onSubmit={(e) => { e.preventDefault(); log(); }} className="mt-4 grid gap-2 md:grid-cols-4">
             <input type="number" min="1" className={inputCls} value={f.data.minutes} onChange={(e) => f.setData('minutes', e.target.value)} aria-label="Minutes" />
-            <input className={inputCls} placeholder="Topic" value={f.data.topic} onChange={(e) => f.setData('topic', e.target.value)} />
-            <select className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData('study_group_id', e.target.value)}><option value="">Personal</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select>
+            <input aria-label="Topic" className={inputCls} placeholder="Topic" value={f.data.topic} onChange={(e) => f.setData('topic', e.target.value)} />
+            <select aria-label="Circle" className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData('study_group_id', e.target.value)}><option value="">Personal</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select>
             <Btn disabled={f.processing}>Log manually</Btn>
           </form>
         </Card>

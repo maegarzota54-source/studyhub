@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Support\UploadRules;
 use App\Models\{NoteFile, StudyGroup};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -50,8 +51,8 @@ class NoteFileController extends Controller
         $d = $request->validate([
             'kind' => 'required|in:note,file,module', 'title' => 'required|string|max:150',
             'body' => 'nullable|string|max:50000', 'study_group_id' => 'nullable|exists:study_groups,id',
-            'file' => 'nullable|file|max:20480',
-        ]);
+            'file' => ['nullable', 'file', 'max:20480', UploadRules::extensions()],
+        ], UploadRules::messages('file'));
         if (!empty($d['study_group_id'])) abort_unless(StudyGroup::find($d['study_group_id'])->hasMember($u), 403);
         $row = ['user_id' => $u->id, 'study_group_id' => $d['study_group_id'] ?? null, 'kind' => $d['kind'], 'title' => $d['title'], 'body' => $d['body'] ?? null];
         if ($f = $request->file('file')) {

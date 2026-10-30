@@ -105,6 +105,43 @@ class AdminController extends Controller
     }
 
     // ---------- Groups ----------
+    // ---------- CSV reports (use the same search and filters as the pages) ----------
+    /** Cells that start with = + - @ would run as formulas in Excel, so they are prefixed with an apostrophe. */
+    private function csvCell($v): string {
+        $v = (string) ($v ?? '');
+        return $v !== '' && str_contains('=+-@', $v[0]) ? "'".$v : $v;
+    }
+    private function csv(string $name, array $header, iterable $rows) {
+        return response()->streamDownload(function () use ($header, $rows) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");   // lets Excel read accents and Filipino characters correctly
+            fputcsv($out, $header);
+            foreach ($rows as $r) fputcsv($out, array_map(fn ($c) => $this->csvCell($c), $r));
+            fclose($out);
+        }, $name.'-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+    public function exportUsers(Request $request) {
+        $users = User::withCount('groups')
+            ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('name', 'like', "%$s%")->orWhere('email', 'like', "%$s%")))
+            ->when($request->role, fn ($q, $r) => $q->where('role', $r))
+            ->when($request->status === 'suspended', fn ($q) => $q->where('is_suspended', true))
+            ->when($request->status === 'active', fn ($q) => $q->where('is_suspended', false))
+            ->orderBy('id')->get();
+        ModerationLog::record($request->user(), 'exported', 'user', null, "Exported {$users->count()} users to CSV");
+        return $this->csv('studyhub-users', ['ID', 'Name', 'Email', 'Role', 'Status', 'Circles joined', 'Joined on', 'Last seen'],
+            $users->map(fn ($u) => [$u->id, $u->name, $u->email, $u->role, $u->is_suspended ? 'suspended' : 'active', $u->groups_count,
+                $u->created_at?->toDateString(), $u->last_seen_at?->toDateTimeString()]));
+    }
+    public function exportGroups(Request $request) {
+        $groups = StudyGroup::withCount(['members', 'messages', 'ratings'])->withAvg('ratings', 'stars')->with('owner:id,name')
+            ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))
+            ->orderBy('id')->get();
+        ModerationLog::record($request->user(), 'exported', 'group', null, "Exported {$groups->count()} study groups to CSV");
+        return $this->csv('studyhub-groups', ['ID', 'Title', 'Topic', 'Owner', 'Members', 'Messages', 'Ratings', 'Average rating', 'Created on'],
+            $groups->map(fn ($g) => [$g->id, $g->title, $g->topic, $g->owner?->name, $g->members_count, $g->messages_count, $g->ratings_count,
+                $g->ratings_count ? round((float) $g->ratings_avg_stars, 2) : '', $g->created_at?->toDateString()]));
+    }
+
     public function groups(Request $request) {
         $groups = StudyGroup::withCount(['members', 'messages', 'ratings'])->withAvg('ratings', 'stars')->with('owner:id,name')
             ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('title', 'like', "%$s%")->orWhere('topic', 'like', "%$s%")))

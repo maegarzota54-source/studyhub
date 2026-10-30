@@ -28,8 +28,8 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::post('/messages/call-log', [MessageController::class, 'callLog'])->name('messages.call');
     Route::post('/messages/receipts', [MessageController::class, 'receipt'])->name('messages.receipts');
-    Route::post('/messages/direct/{user}', [MessageController::class, 'storeDirect'])->name('messages.direct');
-    Route::post('/groups/{group}/messages', [MessageController::class, 'storeGroup'])->name('messages.group');
+    Route::post('/messages/direct/{user}', [MessageController::class, 'storeDirect'])->middleware('throttle:60,1')->name('messages.direct');
+    Route::post('/groups/{group}/messages', [MessageController::class, 'storeGroup'])->middleware('throttle:60,1')->name('messages.group');
     Route::get('/messages/forward-targets', [MessageController::class, 'forwardTargets'])->name('messages.forward.targets');
     Route::post('/messages/{message}/forward', [MessageController::class, 'forward'])->name('messages.forward');
     Route::post('/messages/{message}/save', [MessageController::class, 'saveToFiles'])->name('messages.save');
@@ -41,7 +41,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::delete('/messages/{message}', [MessageController::class, 'unsend'])->name('messages.unsend');
 
     Route::get('/files', [NoteFileController::class, 'index'])->name('files.index');
-    Route::post('/files', [NoteFileController::class, 'store'])->name('files.store');
+    Route::post('/files', [NoteFileController::class, 'store'])->middleware('throttle:20,1')->name('files.store');
     Route::post('/files/{file}/share', [MessageController::class, 'shareFile'])->name('files.share');
     Route::post('/files/{file}/study', [StudyGeneratorController::class, 'generate'])->name('files.study');
     Route::get('/files/{file}/preview', [NoteFileController::class, 'preview'])->name('files.preview');
@@ -57,6 +57,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
 
     Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule.index');
     Route::post('/schedule', [ScheduleController::class, 'store'])->name('schedule.store');
+    Route::patch('/schedule/{schedule}/complete', [ScheduleController::class, 'complete'])->name('schedule.complete');
     Route::delete('/schedule/{schedule}', [ScheduleController::class, 'destroy'])->name('schedule.destroy');
 
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
@@ -79,11 +80,13 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::get('/search', [AdminController::class, 'search'])->name('search');
 
     Route::get('/users', [AdminController::class, 'users'])->name('users');
+    Route::get('/users/export', [AdminController::class, 'exportUsers'])->name('users.export');
     Route::patch('/users/{user}/suspend', [AdminController::class, 'toggleSuspend'])->name('users.suspend');
     Route::patch('/users/{user}/role', [AdminController::class, 'setRole'])->name('users.role');
     Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
 
     Route::get('/groups', [AdminController::class, 'groups'])->name('groups');
+    Route::get('/groups/export', [AdminController::class, 'exportGroups'])->name('groups.export');
     Route::delete('/groups/{group}', [AdminController::class, 'destroyGroup'])->name('groups.destroy');
 
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');

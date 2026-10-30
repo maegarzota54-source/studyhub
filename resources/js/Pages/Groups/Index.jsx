@@ -124,7 +124,7 @@ function MineCard({ g }) {
             <div className="px-4 pt-3"><ActivePeople groupId={g.id} /></div>
             <div className="flex items-center justify-between p-4">
                 <span className="flex items-center gap-1 text-xs text-gray-500"><Users size={13} aria-hidden="true" /> {g.members_count}/{g.max_members} members{admin && ' · admin'}</span>
-                <Link href={route('groups.show', g.id)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#2EC4B6] px-4 py-2 text-sm font-semibold text-[#0A1F44] transition-all hover:brightness-95 active:scale-95">Open <ArrowRight size={14} /></Link>
+                <Link href={route('groups.show', g.id)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#2EC4B6] px-4 py-2 text-sm font-semibold text-[#0A1F44] transition-all hover:brightness-95 active:scale-95">Joined <ArrowRight size={14} /></Link>
             </div>
         </article>
     );
@@ -156,7 +156,7 @@ export default function GroupsIndex({ mode, groups, filters = {}, topics = [], s
                 <div className="mb-5 space-y-3">
                     <div className="flex flex-wrap items-center gap-2">
                         <form onSubmit={(e) => { e.preventDefault(); apply(); }} className="flex min-w-[16rem] flex-1 gap-2">
-                            <input className={inputCls} placeholder="Search by title or topic" value={q} onChange={(e) => setQ(e.target.value)} />
+                            <input aria-label="Search by title or topic" className={inputCls} placeholder="Search by title or topic" value={q} onChange={(e) => setQ(e.target.value)} />
                             <Btn>Search</Btn>
                         </form>
                         <button onClick={() => apply({ recommended: filters.recommended ? undefined : 1 })} aria-pressed={!!filters.recommended}

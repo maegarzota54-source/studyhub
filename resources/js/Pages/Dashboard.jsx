@@ -135,6 +135,26 @@ export default function Dashboard({ suggested = [], stats, weeklyGoal, streak, c
                 </div>
             </section>
 
+            {/* GETTING STARTED (new users with no circle yet) */}
+            {stats.groups === 0 && (
+                <Card className="mt-6 p-5">
+                    <h2 className="font-semibold text-[#1F2937]">Getting started</h2>
+                    <p className="mt-1 text-sm text-gray-600">Three quick steps to get the most out of StudyHub.</p>
+                    <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+                        {[['1', 'Complete your profile', 'Add your course, subjects and availability so we can match you.', 'profile.edit'],
+                          ['2', 'Join a circle', 'Browse study circles or create your own.', 'groups.find'],
+                          ['3', 'Say hi', 'Send a message to your new circle and plan your first session.', 'messages.index']].map(([n, t, d, r]) => (
+                            <li key={n}>
+                                <Link href={route(r)} className="flex h-full gap-3 rounded-xl border border-gray-200 p-4 transition hover:border-[#12315F] hover:shadow">
+                                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#12315F] text-sm font-semibold text-white" aria-hidden="true">{n}</span>
+                                    <span><span className="block font-medium text-[#1F2937]">{t}</span><span className="block text-sm text-gray-600">{d}</span></span>
+                                </Link>
+                            </li>
+                        ))}
+                    </ol>
+                </Card>
+            )}
+
             {/* KPI CARDS */}
             <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 {kpis.map(([label, value, Icon, color, name]) => (

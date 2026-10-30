@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { GraduationCap, Search } from 'lucide-react';
+import { Download, GraduationCap, Search } from 'lucide-react';
 import AdminLayout, { Badge, Btn, Pager, Panel, inputCls, useLiveFilters } from '@/Layouts/AdminLayout';
 
 export default function Groups({ groups, filters }) {
@@ -12,9 +12,13 @@ export default function Groups({ groups, filters }) {
         <AdminLayout title="Study groups" crumbs={[['Groups']]} actions={<span className="text-sm text-gray-500">{groups.total} groups</span>}>
             <Head title="Groups" />
             <Panel>
-                <div className="relative border-b border-gray-100 p-4">
-                    <Search size={16} className="absolute left-7 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input className={`${inputCls} pl-9`} placeholder="Search title or topic" value={f.q} onChange={(e) => set('q', e.target.value)} aria-label="Search groups" />
+                <div className="flex flex-wrap items-center gap-3 border-b border-gray-100 p-4">
+                    <div className="relative min-w-[14rem] flex-1">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input className={`${inputCls} pl-9`} placeholder="Search title or topic" value={f.q} onChange={(e) => set('q', e.target.value)} aria-label="Search groups" />
+                    </div>
+                    <a href={route('admin.groups.export', { q: f.q || undefined })}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-black/5"><Download size={15} aria-hidden="true" /> Export CSV</a>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">

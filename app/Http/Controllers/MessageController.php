@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Support\UploadRules;
 use App\Events\MessageSent;
 use App\Models\{ChatReadState, Message, MessageReaction, NoteFile, StudyGroup, User};
 use App\Notifications\StudyHubNotice;
@@ -65,11 +66,14 @@ class MessageController extends Controller
     }
 
     private function build(Request $request, array $extra): Message {
+        // recorded voice clips get their own fixed extension below, so the extension check only applies to ordinary files
+        $isVoice = $request->filled('voice_seconds');
         $data = $request->validate([
             'body' => 'nullable|string|max:5000', 'parent_id' => 'nullable|exists:messages,id',
             'kind' => 'nullable|in:message,comment,answer,suggestion',
-            'attachment' => 'nullable|file|max:20480', 'voice_seconds' => 'nullable|integer|min:0|max:600',
-        ]);
+            'attachment' => array_filter(['nullable', 'file', 'max:20480', $isVoice ? null : UploadRules::extensions()]),
+            'voice_seconds' => 'nullable|integer|min:0|max:600',
+        ], UploadRules::messages('attachment'));
         abort_if(blank($data['body'] ?? null) && !$request->hasFile('attachment'), 422, 'Write something or attach a file.');
         $voice = isset($data['voice_seconds']) && $request->hasFile('attachment');   // a recorded voice clip
         $m = new Message($extra + ['sender_id' => $request->user()->id, 'body' => $data['body'] ?? null,

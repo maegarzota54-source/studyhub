@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Lock, Phone, Radio, Video } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { CheckCircle2, Lock, Phone, Radio, RotateCcw, Video } from 'lucide-react';
 import { startCall, useCall } from '@/lib/callManager';
 
 /** The server stores the time exactly as typed (no zone), so read it back as the same wall-clock time. */
@@ -7,6 +8,7 @@ export const wallClock = (iso) => new Date(String(iso).replace(/(\.\d+)?Z$/, '')
 const DEFAULT_MINUTES = 120;   // a session with no end time counts as live for 2 hours
 
 export function sessionStatus(e, now = new Date()) {
+  if (e.completed_at) return 'completed';   // the host (or a circle admin) closed the session
   const start = wallClock(e.starts_at);
   const end = e.ends_at ? wallClock(e.ends_at) : new Date(start.getTime() + DEFAULT_MINUTES * 60000);
   return now < start ? 'upcoming' : now < end ? 'live' : 'ended';
@@ -51,7 +53,8 @@ export default function SessionCard({ event: e, people = [], me }) {
   const why = busy ? 'You are already in a call' : !c.ready ? 'Connecting…' : targets.length === 0 ? (isHost ? 'Nobody invited is online yet' : `${host.name} is not online yet`) : '';
 
   const tone = status === 'upcoming' ? 'border-gray-200 bg-gray-100 text-gray-400'
-    : status === 'live' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white opacity-60';
+    : status === 'live' ? 'border-green-500 bg-green-50' : status === 'completed' ? 'border-hunter-500/40 bg-hunter-50' : 'border-gray-200 bg-white opacity-60';
+  const toggleDone = () => router.patch(route('schedule.complete', e.id), {}, { preserveScroll: true });
   return (
     <div className={`rounded-xl border p-4 ${tone}`}>
       <div className="flex items-start justify-between gap-3">
@@ -63,9 +66,19 @@ export default function SessionCard({ event: e, people = [], me }) {
           {status === 'upcoming' && <><Lock size={13} /> Starts in {span(start - now)}</>}
           {status === 'live' && <span className="flex items-center gap-1 text-green-700"><Radio size={13} className="animate-pulse" /> Live now</span>}
           {status === 'ended' && 'Ended'}
+          {status === 'completed' && <span className="flex items-center gap-1 text-hunter-700"><CheckCircle2 size={13} aria-hidden="true" /> Completed</span>}
         </span>
       </div>
-      {status !== 'ended' && !solo && (
+      {status !== 'upcoming' && e.can_complete && (
+        <div className="mt-3">
+          <button type="button" onClick={toggleDone}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-hunter-700 px-3 py-1.5 text-sm font-semibold text-hunter-700 hover:bg-hunter-50">
+            {status === 'completed' ? <><RotateCcw size={14} aria-hidden="true" /> Reopen session</> : <><CheckCircle2 size={14} aria-hidden="true" /> Mark as completed</>}
+          </button>
+          {status === 'completed' && e.completed_at && <span className="ml-2 text-xs text-gray-500">Completed {new Date(e.completed_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>}
+        </div>
+      )}
+      {status !== 'ended' && status !== 'completed' && !solo && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <button disabled={!can} title={why || 'Voice'} onClick={() => go(false)}
             className="flex items-center gap-1.5 rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500">

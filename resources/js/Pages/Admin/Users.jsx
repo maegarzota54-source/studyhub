@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { Search } from 'lucide-react';
+import { Download, Search } from 'lucide-react';
 import AdminLayout, { Badge, Btn, Pager, Panel, inputCls, seen, useLiveFilters } from '@/Layouts/AdminLayout';
 
 export default function Users({ users, filters, totals }) {
@@ -18,6 +18,8 @@ export default function Users({ users, filters, totals }) {
                         <input className={`${inputCls} pl-9`} placeholder="Search name or email" value={f.q} onChange={(e) => set('q', e.target.value)} aria-label="Search users" />
                     </div>
                     <select className={`${inputCls} !w-auto`} value={f.role} onChange={(e) => set('role', e.target.value)} aria-label="Role"><option value="">All roles</option><option value="student">Students</option><option value="admin">Admins</option></select>
+                    <a href={route('admin.users.export', { q: f.q || undefined, role: f.role || undefined, status: f.status || undefined })}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-black/5"><Download size={15} aria-hidden="true" /> Export CSV</a>
                     <select className={`${inputCls} !w-auto`} value={f.status} onChange={(e) => set('status', e.target.value)} aria-label="Status"><option value="">Any status</option><option value="active">Active</option><option value="suspended">Suspended</option></select>
                 </div>
                 <div className="overflow-x-auto">

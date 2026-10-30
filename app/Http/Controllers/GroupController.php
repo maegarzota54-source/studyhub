@@ -84,7 +84,7 @@ class GroupController extends Controller
             'modules' => $group->files()->where('kind', 'module')->with('user:id,name')->latest()->get()
                 ->each(fn ($file) => $file->setAttribute('preview', NoteFileController::previewType($file->path))),
             'tasks' => Task::where('study_group_id', $group->id)->with('assignees')->withCount('comments')->latest()->get(),
-            'events' => Schedule::visibleTo($u)->where('study_group_id', $group->id)->with(['user:id,name,avatar', 'attendees:id,name,avatar'])->orderBy('starts_at')->get(),
+            'events' => tap(Schedule::visibleTo($u)->where('study_group_id', $group->id)->with(['user:id,name,avatar', 'attendees:id,name,avatar'])->orderBy('starts_at')->get(), fn ($ev) => Schedule::flagCompletable($ev, $u)),
         ]);
     }
 

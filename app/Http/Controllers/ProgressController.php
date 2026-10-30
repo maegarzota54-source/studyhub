@@ -13,20 +13,33 @@ class ProgressController extends Controller
         $perDay = StudySession::where('user_id', $u->id)->where('studied_on', '>=', $days->first())
             ->selectRaw('studied_on, SUM(minutes) as m')->groupBy('studied_on')->pluck('m', 'studied_on');
         $weekStart = now()->startOfWeek()->toDateString();
+        $myGroups = $u->groups()->with('members:users.id,users.name')->get(['study_groups.id', 'title']);
 
         return Inertia::render('Progress/Index', [
             'daily' => $days->map(fn ($d) => ['day' => \Carbon\Carbon::parse($d)->format('D'), 'hours' => round(($perDay[$d] ?? 0) / 60, 2)])->values(),
             'weekHours' => round(StudySession::where('user_id', $u->id)->where('studied_on', '>=', $weekStart)->sum('minutes') / 60, 1),
             'totalHours' => round(StudySession::where('user_id', $u->id)->sum('minutes') / 60, 1),
-            'groupBoards' => $u->groups()->get(['study_groups.id', 'title'])->map(fn (StudyGroup $g) => [
-                'id' => $g->id, 'title' => $g->title,
-                'members' => $g->members()->get(['users.id', 'users.name'])->map(fn ($m) => [
-                    'name' => $m->name,
-                    'hours' => round(StudySession::where('user_id', $m->id)->where('study_group_id', $g->id)->where('studied_on', '>=', $weekStart)->sum('minutes') / 60, 1),
-                ])->sortByDesc('hours')->values()]),
+            'groupBoards' => $this->groupBoards($myGroups, $weekStart),
             'recent' => StudySession::where('user_id', $u->id)->with('group:id,title')->latest('studied_on')->latest('id')->limit(8)->get(),
-            'groups' => $u->groups()->get(['study_groups.id', 'title']),
+            'groups' => $myGroups->map->only(['id', 'title'])->values(),
         ]);
+    }
+
+    /**
+     * This week's leaderboard for every circle of the student. One grouped query for all circles
+     * (instead of one SUM query per member per circle), so the page stays fast as circles grow.
+     */
+    private function groupBoards($groups, string $weekStart) {
+        $minutes = StudySession::whereIn('study_group_id', $groups->pluck('id'))->where('studied_on', '>=', $weekStart)
+            ->selectRaw('study_group_id, user_id, SUM(minutes) as m')->groupBy('study_group_id', 'user_id')->get()
+            ->mapWithKeys(fn ($r) => [$r->study_group_id.'-'.$r->user_id => (int) $r->m]);
+        return $groups->map(fn (StudyGroup $g) => [
+            'id' => $g->id, 'title' => $g->title,
+            'members' => $g->members->map(fn ($m) => [
+                'name' => $m->name,
+                'hours' => round(($minutes[$g->id.'-'.$m->id] ?? 0) / 60, 1),
+            ])->sortByDesc('hours')->values(),
+        ])->values();
     }
 
     /** Used by both manual logging and the auto-timer (which posts elapsed minutes on stop). */

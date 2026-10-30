@@ -48,12 +48,12 @@ export default function Tasks({ tasks, groups }) {
       <Head title="Tasks" />
       <Card className="mb-4">
         <form onSubmit={(e) => { e.preventDefault(); f.post(route('tasks.store'), { onSuccess: () => f.reset() }); }} className="grid gap-2 md:grid-cols-4">
-          <input className={`${inputCls} md:col-span-2`} placeholder="Task title" value={f.data.title} onChange={(e) => f.setData('title', e.target.value)} />
+          <input aria-label="Task title" className={`${inputCls} md:col-span-2`} placeholder="Task title" value={f.data.title} onChange={(e) => f.setData('title', e.target.value)} />
           <input type="date" className={inputCls} value={f.data.due_date} onChange={(e) => f.setData('due_date', e.target.value)} aria-label="Due date" />
-          <select className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData({ ...f.data, study_group_id: e.target.value, assignee_ids: [] })}>
+          <select aria-label="Circle" className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData({ ...f.data, study_group_id: e.target.value, assignee_ids: [] })}>
             <option value="">Personal task</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
           </select>
-          <textarea className={`${inputCls} md:col-span-4`} rows={2} placeholder="Description (what needs to be done?)" value={f.data.description} onChange={(e) => f.setData('description', e.target.value)} />
+          <textarea aria-label="Description (what needs to be done?)" className={`${inputCls} md:col-span-4`} rows={2} placeholder="Description (what needs to be done?)" value={f.data.description} onChange={(e) => f.setData('description', e.target.value)} />
           {f.data.study_group_id && (
             <div className="md:col-span-4">
               <p className="mb-1 text-xs font-medium text-gray-600">Assign to (pick one or more)</p>
