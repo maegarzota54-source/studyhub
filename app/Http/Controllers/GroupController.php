@@ -71,13 +71,20 @@ class GroupController extends Controller
         return Inertia::render('Groups/Show', [
             'group' => $group->load('owner:id,name'),
             'isGroupAdmin' => $group->isGroupAdmin($u),
+            'rating' => [
+                'avg' => round((float) $group->ratings()->avg('stars'), 1),
+                'count' => $group->ratings()->count(),
+                'mine' => $group->ratings()->where('user_id', $u->id)->first(['stars', 'comment']),
+                'recent' => $group->ratings()->with('user:id,name')->latest()->limit(5)->get(['id', 'user_id', 'stars', 'comment', 'created_at']),
+            ],
             'members' => $group->members()->select('users.id', 'users.name', 'users.avatar', 'users.bio')->get()
+                ->each(fn ($m) => $m->setAttribute('circle_role', $m->pivot->role))
                 ->each->append('avatar_url'),
             'messages' => $messages,
             'modules' => $group->files()->where('kind', 'module')->with('user:id,name')->latest()->get()
                 ->each(fn ($file) => $file->setAttribute('preview', NoteFileController::previewType($file->path))),
             'tasks' => Task::where('study_group_id', $group->id)->with('assignees')->withCount('comments')->latest()->get(),
-            'events' => Schedule::visibleTo($u)->where('study_group_id', $group->id)->with(['user:id,name,avatar', 'attendees:id,name,avatar'])->orderBy('starts_at')->get(),
+            'events' => tap(Schedule::visibleTo($u)->where('study_group_id', $group->id)->with(['user:id,name,avatar', 'attendees:id,name,avatar'])->orderBy('starts_at')->get(), fn ($ev) => Schedule::flagCompletable($ev, $u)),
         ]);
     }
 

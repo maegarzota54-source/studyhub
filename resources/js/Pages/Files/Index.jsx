@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import { BookOpen, Download, Eye, X } from 'lucide-react';
+import { BookOpen, Download, Eye, Share2, X } from 'lucide-react';
 import AppLayout, { Btn, Card, inputCls } from '@/Layouts/AppLayout';
 import StudyGeneratorModal from '@/Components/StudyGeneratorModal';
+import ForwardModal from '@/Components/ForwardModal';
 
 const size = (b) => (b ? (b > 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.ceil(b / 1e3) + ' KB') : '');
 
@@ -124,6 +125,7 @@ function PreviewModal({ item, onClose }) {
 export default function Files({ items, groups, filters }) {
   const [previewId, setPreviewId] = useState(null);
   const [studyItem, setStudyItem] = useState(null);
+  const [shareItem, setShareItem] = useState(null);
   const previewItem = items.find((i) => i.id === previewId);
   const f = useForm({ kind: 'note', title: '', body: '', study_group_id: '', file: null });
   const filter = (k, v) => router.get(route('files.index'), { ...filters, [k]: v || undefined }, { preserveState: true });
@@ -131,21 +133,21 @@ export default function Files({ items, groups, filters }) {
     <AppLayout title="Notes & Files">
       <Head title="Notes & Files" />
       <Card className="mb-4">
-        <form onSubmit={(e) => { e.preventDefault(); f.post(route('files.store'), { forceFormData: true, onSuccess: () => f.reset('title', 'body', 'file') }); }} className="grid gap-2 md:grid-cols-4">
-          <select className={inputCls} value={f.data.kind} onChange={(e) => f.setData('kind', e.target.value)}><option value="note">Note</option><option value="file">File</option><option value="module">Study module</option></select>
-          <select className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData('study_group_id', e.target.value)}><option value="">Personal</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select>
-          <input className={`${inputCls} md:col-span-2`} placeholder="Title" value={f.data.title} onChange={(e) => f.setData('title', e.target.value)} />
-          <textarea className={`${inputCls} md:col-span-3`} placeholder="Note text (optional)" value={f.data.body} onChange={(e) => f.setData('body', e.target.value)} />
+        <form onSubmit={(e) => { e.preventDefault(); f.post(route('files.store'), { forceFormData: true, onSuccess: () => f.reset('title', 'body', 'file') }); }} className="grid grid-cols-1 gap-2 md:grid-cols-4">
+          <select aria-label="Type" className={inputCls} value={f.data.kind} onChange={(e) => f.setData('kind', e.target.value)}><option value="note">Note</option><option value="file">File</option><option value="module">Study module</option></select>
+          <select aria-label="Circle" className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData('study_group_id', e.target.value)}><option value="">Personal</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select>
+          <input aria-label="Title" className={`${inputCls} md:col-span-2`} placeholder="Title" value={f.data.title} onChange={(e) => f.setData('title', e.target.value)} />
+          <textarea aria-label="Note text (optional)" className={`${inputCls} md:col-span-3`} placeholder="Note text (optional)" value={f.data.body} onChange={(e) => f.setData('body', e.target.value)} />
           <input type="file" className={inputCls} onChange={(e) => f.setData('file', e.target.files[0])} />
           {Object.values(f.errors).map((m) => <p key={m} className="text-xs text-raspberry-600 md:col-span-4">{m}</p>)}
           <Btn disabled={f.processing}>Save</Btn>
         </form>
       </Card>
-      <div className="mb-3 flex gap-2">
-        <select className="rounded-lg border-gray-300 text-sm" value={filters.group_id ?? ''} onChange={(e) => filter('group_id', e.target.value)}>
+      <div className="mb-3 flex flex-wrap gap-2">
+        <select aria-label="Circle" className="max-w-full min-w-0 rounded-lg border-gray-300 text-sm" value={filters.group_id ?? ''} onChange={(e) => filter('group_id', e.target.value)}>
           <option value="">All sources</option><option value="personal">Personal</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
         </select>
-        <select className="rounded-lg border-gray-300 text-sm" value={filters.kind ?? ''} onChange={(e) => filter('kind', e.target.value)}>
+        <select aria-label="Type" className="max-w-full min-w-0 rounded-lg border-gray-300 text-sm" value={filters.kind ?? ''} onChange={(e) => filter('kind', e.target.value)}>
           <option value="">All types</option><option value="note">Notes</option><option value="file">Files</option><option value="module">Modules</option>
         </select>
       </div>
@@ -157,12 +159,14 @@ export default function Files({ items, groups, filters }) {
               <p className="text-xs text-gray-500">{i.kind} · {i.group?.title ?? 'Personal'} · {i.user.name} {size(i.size)}{i.message_id && <span className="ml-2 rounded bg-hunter-100 px-1.5 text-hunter-800">from chat</span>}</p></div>
             {(i.preview || i.body || i.path) && <button className="inline-flex items-center gap-1 text-sm text-hunter-700 hover:underline" onClick={() => setPreviewId(i.id)}><Eye size={14} /> Preview</button>}
             {(i.body || i.path) && <button className="inline-flex items-center gap-1 text-sm font-medium text-hunter-700 hover:underline" onClick={() => setStudyItem(i)}><BookOpen size={14} /> Study</button>}
+            {(i.body || i.path) && <button className="inline-flex items-center gap-1 text-sm text-hunter-700 hover:underline" onClick={() => setShareItem(i)}><Share2 size={14} /> Share</button>}
             {i.path && <a className="text-sm text-hunter-700 underline" href={route('files.download', i.id)}>Download</a>}
             <button className="text-sm text-raspberry-600" onClick={() => confirm('Delete?') && router.delete(route('files.destroy', i.id))}>Delete</button>
           </div>
         ))}
       </Card>
       {previewItem && <PreviewModal key={previewItem.id} item={previewItem} onClose={() => setPreviewId(null)} />}
+      {shareItem && <ForwardModal key={shareItem.id} url={route('files.share', shareItem.id)} title={`Share “${shareItem.title}”`} onClose={() => setShareItem(null)} />}
       {studyItem && <StudyGeneratorModal key={studyItem.id} item={studyItem} onClose={() => setStudyItem(null)} />}
     </AppLayout>
   );

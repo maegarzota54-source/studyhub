@@ -23,8 +23,8 @@ export default function TaskShow({ task, canManage, canEdit, members, groups }) 
     <AppLayout title="Task">
       <Head title={task.title} />
       <Link href={route('tasks.index')} className="mb-3 inline-flex items-center gap-1 text-sm text-hunter-700 hover:underline"><ArrowLeft size={14} /> All tasks</Link>
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="min-w-0 space-y-4 lg:col-span-2">
           <Card>
             {!editing ? (
               <>
@@ -44,9 +44,9 @@ export default function TaskShow({ task, canManage, canEdit, members, groups }) 
               </>
             ) : (
               <form onSubmit={save} className="space-y-2">
-                <input className={inputCls} value={e.data.title} onChange={(ev) => e.setData('title', ev.target.value)} />
-                <textarea className={inputCls} rows={5} placeholder="Description" value={e.data.description} onChange={(ev) => e.setData('description', ev.target.value)} />
-                <input type="date" className={inputCls} value={e.data.due_date} onChange={(ev) => e.setData('due_date', ev.target.value)} />
+                <input aria-label="Title" className={inputCls} value={e.data.title} onChange={(ev) => e.setData('title', ev.target.value)} />
+                <textarea aria-label="Description" className={inputCls} rows={5} placeholder="Description" value={e.data.description} onChange={(ev) => e.setData('description', ev.target.value)} />
+                <input aria-label="Due date" type="date" className={inputCls} value={e.data.due_date} onChange={(ev) => e.setData('due_date', ev.target.value)} />
                 {task.group && (
                   <div className="flex flex-wrap gap-2">
                     {members.map((u) => (
@@ -79,7 +79,7 @@ export default function TaskShow({ task, canManage, canEdit, members, groups }) 
               ))}
             </div>
             <form onSubmit={(ev) => { ev.preventDefault(); c.post(route('tasks.comment', task.id), { preserveScroll: true, onSuccess: () => c.reset() }); }} className="mt-4 flex gap-2">
-              <input className={inputCls} placeholder="Write a comment…" value={c.data.body} onChange={(ev) => c.setData('body', ev.target.value)} />
+              <input aria-label="Write a comment" className={inputCls} placeholder="Write a comment…" value={c.data.body} onChange={(ev) => c.setData('body', ev.target.value)} />
               <Btn disabled={c.processing || !c.data.body.trim()}><Send size={14} /></Btn>
             </form>
           </Card>
@@ -104,7 +104,7 @@ export default function TaskShow({ task, canManage, canEdit, members, groups }) 
             <Card>
               <h3 className="mb-2 flex items-center gap-1 font-semibold"><Share2 size={14} /> Share with a circle</h3>
               <p className="mb-2 text-xs text-gray-500">Posts this task in the group chat so everyone can open it, comment, and be assigned.</p>
-              <select className={inputCls} value={shareTo} onChange={(ev) => setShareTo(ev.target.value)}><option value="">Choose a circle…</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select>
+              <select aria-label="Circle to share with" className={inputCls} value={shareTo} onChange={(ev) => setShareTo(ev.target.value)}><option value="">Choose a circle…</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select>
               <Btn className="mt-2" disabled={!shareTo} onClick={() => router.post(route('tasks.share', task.id), { study_group_id: shareTo }, { preserveScroll: true })}>Share</Btn>
             </Card>
           )}

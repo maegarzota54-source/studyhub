@@ -129,7 +129,7 @@ export default function StudyGeneratorModal({ item, onClose }) {
                                 <div>
                                     <p className="mb-3 whitespace-pre-wrap rounded-lg bg-white p-3 text-sm text-slate-800">{current.scenario}</p>
                                     <p className="mb-3 font-medium text-slate-900">{current.question}</p>
-                                    <textarea value={answer} onChange={(event) => setAnswer(event.target.value)} rows={3}
+                                    <textarea aria-label="Write your answer, then compare it with the suggested answer" value={answer} onChange={(event) => setAnswer(event.target.value)} rows={3}
                                         placeholder="Write your answer, then compare it with the suggested answer…" className="w-full rounded-lg border-gray-300 text-sm focus:border-hunter-700 focus:ring-hunter-700" />
                                     <details className="mt-3 rounded-lg border border-gray-200 bg-white p-3">
                                         <summary className="cursor-pointer text-sm font-semibold text-hunter-700">Show suggested answer</summary>

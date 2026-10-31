@@ -1,7 +1,8 @@
+export const ActivePeople = ActiveAvatars;
 import { useEffect, useState } from 'react';
 import { getActivity, subscribe } from '@/lib/groupActivity';
 
-const TONES = [['#1B4322', '#038666'], ['#038666', '#081C15'], ['#FBB02D', '#1B4322'], ['#081C15', '#038666'], ['#1B4322', '#FBB02D']];
+const TONES = [['#12315F', '#0B8A94'], ['#0B8A94', '#0A1F44'], ['#2EC4B6', '#12315F'], ['#0A1F44', '#0B8A94'], ['#12315F', '#2EC4B6']];
 
 /** The group's chosen picture as a card background (or a palette gradient with its initial when there is none). */
 export function GroupCover({ group, className = '', children }) {
@@ -48,15 +49,15 @@ export function ActiveAvatars({ groupId }) {
         <div className="flex items-center -space-x-2" aria-label={`Active members: ${members.map((member) => member.name).join(', ')}`}>
             {members.slice(0, 5).map((member) => (
                 <span key={member.id} tabIndex={0} role="img" aria-label={member.name}
-                    className="group/avatar relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#FBB02D]">
+                    className="group/avatar relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#2EC4B6]">
                     <img src={member.avatar_url} alt="" className="h-8 w-8 rounded-full border-2 border-white object-cover shadow-sm" />
-                    <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#081C15] px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity group-hover/avatar:opacity-100 group-focus-visible/avatar:opacity-100">
+                    <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#0A1F44] px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity group-hover/avatar:opacity-100 group-focus-visible/avatar:opacity-100">
                         {member.name}
                     </span>
                 </span>
             ))}
             {members.length > 5 && (
-                <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#081C15]/80 text-[10px] font-bold text-white">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#0A1F44]/80 text-[10px] font-bold text-white">
                     +{members.length - 5}
                 </span>
             )}

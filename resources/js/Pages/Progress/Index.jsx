@@ -22,20 +22,20 @@ export default function Progress({ daily, weekHours, totalHours, groupBoards, re
   return (
     <AppLayout title="Study Session Tracking">
       <Head title="Progress" />
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card><p className="text-3xl font-bold text-hunter-700">{weekHours} h</p><p className="text-sm text-gray-500">This week</p>
           <p className="mt-3 text-xl font-semibold">{totalHours} h</p><p className="text-sm text-gray-500">All time</p></Card>
-        <Card className="lg:col-span-2">
+        <Card className="min-w-0 lg:col-span-2">
           <h2 className="mb-2 font-semibold">Hours per day (last 7 days)</h2>
-          <div className="h-48"><ResponsiveContainer><BarChart data={daily}><XAxis dataKey="day" /><YAxis width={30} /><Tooltip /><Bar dataKey="hours" fill="#355E3B" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div>
+          <div className="h-48"><ResponsiveContainer><BarChart data={daily}><XAxis dataKey="day" /><YAxis width={30} /><Tooltip /><Bar dataKey="hours" fill="#12315F" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div>
         </Card>
-        <Card className="lg:col-span-3">
+        <Card className="min-w-0 lg:col-span-3">
           <h2 className="mb-3 font-semibold">Log study time</h2>
           <Timer onStop={log} />
-          <form onSubmit={(e) => { e.preventDefault(); log(); }} className="mt-4 grid gap-2 md:grid-cols-4">
+          <form onSubmit={(e) => { e.preventDefault(); log(); }} className="mt-4 grid grid-cols-1 gap-2 md:grid-cols-4">
             <input type="number" min="1" className={inputCls} value={f.data.minutes} onChange={(e) => f.setData('minutes', e.target.value)} aria-label="Minutes" />
-            <input className={inputCls} placeholder="Topic" value={f.data.topic} onChange={(e) => f.setData('topic', e.target.value)} />
-            <select className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData('study_group_id', e.target.value)}><option value="">Personal</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select>
+            <input aria-label="Topic" className={inputCls} placeholder="Topic" value={f.data.topic} onChange={(e) => f.setData('topic', e.target.value)} />
+            <select aria-label="Circle" className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData('study_group_id', e.target.value)}><option value="">Personal</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select>
             <Btn disabled={f.processing}>Log manually</Btn>
           </form>
         </Card>
@@ -49,7 +49,7 @@ export default function Progress({ daily, weekHours, totalHours, groupBoards, re
               ))}</Card>
           );
         })}
-        <Card className="lg:col-span-3"><h2 className="mb-2 font-semibold">Recent sessions</h2>
+        <Card className="min-w-0 lg:col-span-3"><h2 className="mb-2 font-semibold">Recent sessions</h2>
           {recent.map((s) => <p key={s.id} className="flex justify-between border-b border-gray-100 py-1 text-sm last:border-0"><span>{s.topic || s.group?.title || 'Personal study'}</span><span className="text-gray-500">{s.studied_on} · {s.minutes} min</span></p>)}</Card>
       </div>
     </AppLayout>

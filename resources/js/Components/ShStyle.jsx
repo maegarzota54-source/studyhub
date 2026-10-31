@@ -6,22 +6,22 @@ const css = `
 .sh-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:.75rem;padding:.75rem 1.25rem;font-weight:600;font-size:.95rem;cursor:pointer;transition:transform .15s,box-shadow .2s,background .2s}
 .sh-btn:active{transform:scale(.97)}
 .sh-btn[disabled]{opacity:.6;cursor:wait}
-.sh-btn-primary{background:#355E3B;color:#fff}
-.sh-btn-primary:hover{background:#2a4a2f;box-shadow:0 10px 24px -10px #355E3B}
+.sh-btn-primary{background:#12315F;color:#fff}
+.sh-btn-primary:hover{background:#0E2A55;box-shadow:0 10px 24px -10px #12315F}
 .sh-btn-accent{background:#E30B5C;color:#fff}
 .sh-btn-accent:hover{background:#C81E51;box-shadow:0 10px 24px -10px #E30B5C}
 .sh-btn-ghost{background:#fff;color:#1F2937;border:1px solid #D1D5DB}
 .sh-btn-ghost:hover{background:#F3F4F6}
 .sh-btn:focus-visible,.sh-chip:focus-visible,.sh-avatar:focus-visible,.sh-tab:focus-visible{outline:3px solid #E30B5C;outline-offset:2px}
 .sh-input{width:100%;border:1.5px solid #D1D5DB;border-radius:.75rem;padding:.8rem 1rem;background:#fff;color:#1F2937;transition:border-color .15s,box-shadow .15s}
-.sh-input:focus{outline:none;border-color:#355E3B;box-shadow:0 0 0 4px rgba(53,94,59,.16)}
+.sh-input:focus{outline:none;border-color:#12315F;box-shadow:0 0 0 4px rgba(53,94,59,.16)}
 .sh-input.err{border-color:#E30B5C}
 .sh-chip{border:1.5px solid #D1D5DB;border-radius:999px;padding:.4rem .95rem;font-size:.875rem;font-weight:500;background:#fff;color:#1F2937;cursor:pointer;transition:all .15s}
-.sh-chip:hover{border-color:#355E3B}
-.sh-chip[aria-pressed=true]{background:#355E3B;border-color:#355E3B;color:#fff}
+.sh-chip:hover{border-color:#12315F}
+.sh-chip[aria-pressed=true]{background:#12315F;border-color:#12315F;color:#fff}
 .sh-tab{display:flex;align-items:center;gap:.6rem;width:100%;text-align:left;padding:.85rem 1rem;border-radius:.85rem;border:1.5px solid transparent;cursor:pointer;transition:all .2s;color:#1F2937}
 .sh-tab:hover{background:#fff}
-.sh-tab[aria-selected=true]{background:#fff;border-color:#355E3B;box-shadow:0 12px 28px -18px #355E3B}
+.sh-tab[aria-selected=true]{background:#fff;border-color:#12315F;box-shadow:0 12px 28px -18px #12315F}
 .sh-card{background:#fff;border:1px solid #E5E7EB;border-radius:1rem}
 @keyframes sh-spin{to{transform:rotate(360deg)}}
 @keyframes sh-pop{0%{opacity:0;transform:scale(.3)}70%{transform:scale(1.15)}100%{opacity:1;transform:scale(1)}}

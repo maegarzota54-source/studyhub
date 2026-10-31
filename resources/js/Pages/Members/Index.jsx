@@ -53,7 +53,7 @@ export default function Members({ members, groups }) {
       {members.length === 0 && <Card><p className="text-sm text-gray-500">No members yet. Join a study circle and the people in it will show up here.</p></Card>}
       {members.length > 0 && list.length === 0 && <p className="text-sm text-gray-500">No members match.</p>}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {list.map((m) => {
           const on = isOn(m);
           const why = busy ? 'You are already in a call' : !call.ready ? 'Connecting…' : !on ? `${m.name} is offline` : '';

@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     protected $guarded = ['id'];
-    protected function casts(): array { return ['is_flagged' => 'boolean']; }
+    protected function casts(): array { return ['is_flagged' => 'boolean', 'is_forwarded' => 'boolean', 'flagged_at' => 'datetime']; }
     public function sender() { return $this->belongsTo(User::class, 'sender_id'); }
+    public function reporter() { return $this->belongsTo(User::class, 'flagged_by'); }
     public function recipient() { return $this->belongsTo(User::class, 'recipient_id'); }
 
     public function parent() { return $this->belongsTo(self::class, 'parent_id'); }

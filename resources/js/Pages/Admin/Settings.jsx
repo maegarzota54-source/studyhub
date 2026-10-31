@@ -9,8 +9,13 @@ export default function Settings({ settings }) {
             <form onSubmit={(e) => { e.preventDefault(); f.post(route('admin.settings.save'), { preserveScroll: true }); }} className="grid max-w-3xl gap-6">
                 <Panel title="Student announcement">
                     <div className="space-y-3 p-5">
+HEAD
+                        <p className="text-sm text-gray-600">Shown at the top of every student page while enabled. Good for exam weeks or maintenance notices.</p>
+                        <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={f.data.announcement_enabled} onChange={(e) => f.setData('announcement_enabled', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-[#12315F] focus:ring-[#12315F]" /> Show the banner</label>
+
                         <p className="text-sm text-gray-600">Send important updates to students through their notifications. Saving an unchanged announcement will not send it again.</p>
                         <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={f.data.announcement_enabled} onChange={(e) => f.setData('announcement_enabled', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-[#355E3B] focus:ring-[#355E3B]" /> Send announcement to student notifications</label>
+
                         <div>
                             <label htmlFor="ann" className="mb-1 block text-sm font-medium">Message</label>
                             <textarea id="ann" rows="3" maxLength="300" className={inputCls} value={f.data.announcement} onChange={(e) => f.setData('announcement', e.target.value)} />
@@ -28,7 +33,7 @@ export default function Settings({ settings }) {
                         {f.errors.max_group_size && <p className="text-sm text-[#C81E51]">{f.errors.max_group_size}</p>}
                     </div>
                 </Panel>
-                <div><button disabled={f.processing} className="rounded-lg bg-[#355E3B] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2a4a2f] disabled:opacity-60">{f.processing ? 'Saving…' : 'Save settings'}</button></div>
+                <div><button disabled={f.processing} className="rounded-lg bg-[#12315F] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0E2A55] disabled:opacity-60">{f.processing ? 'Saving…' : 'Save settings'}</button></div>
             </form>
         </AdminLayout>
     );

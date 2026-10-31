@@ -62,7 +62,7 @@ export function PasswordField({ id, label, error, right, ...props }) {
             <div className="relative">
                 <input id={id} type={show ? 'text' : 'password'} {...props} className={`sh-input pr-12 ${error ? 'err' : ''}`} aria-invalid={!!error} />
                 <button type="button" onClick={() => setShow(!show)} aria-label={show ? 'Hide password' : 'Show password'}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#355E3B]">
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#12315F]">
                     {show ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
             </div>
@@ -73,10 +73,10 @@ export function PasswordField({ id, label, error, right, ...props }) {
 
 export default function AuthShell({ title, subtitle, youName = '', footer, children }) {
     return (
-        <div className="grid min-h-screen bg-[#F3F4F6] lg:grid-cols-2">
+        <div className="grid grid-cols-1 min-h-screen bg-[#F3F4F6] lg:grid-cols-2">
             <ShStyle />
             <aside className="relative hidden flex-col items-center justify-between overflow-hidden px-10 py-10 lg:flex"
-                style={{ background: 'radial-gradient(circle at 30% 20%, #4a7c52 0%, #355E3B 45%, #1d3321 100%)' }}>
+                style={{ background: 'radial-gradient(circle at 30% 20%, #1E4E8C 0%, #12315F 45%, #0A1F44 100%)' }}>
                 <Link href="/" className="sh-display flex items-center gap-2 self-start text-lg font-extrabold text-white">
                     <img src="/images/studyhub-logo.png" alt="" className="h-10 w-10 rounded-full bg-white" /> StudyHub-Group Circle System
                 </Link>
@@ -99,10 +99,10 @@ export default function AuthShell({ title, subtitle, youName = '', footer, child
 
             <main className="flex items-center justify-center px-6 py-12">
                 <div className="sh-fade w-full max-w-md">
-                    <Link href="/" className="sh-display mb-8 flex items-center gap-2 text-lg font-extrabold text-[#355E3B] lg:hidden">
+                    <Link href="/" className="sh-display mb-8 flex items-center gap-2 text-lg font-extrabold text-[#12315F] lg:hidden">
                         <img src="/images/studyhub-logo.png" alt="" className="h-10 w-10 rounded-full bg-white" /> StudyHub-Group Circle System
                     </Link>
-                    <h1 className="sh-display text-4xl font-extrabold text-[#1d3321]">{title}</h1>
+                    <h1 className="sh-display text-4xl font-extrabold text-[#0A1F44]">{title}</h1>
                     <p className="mt-2 text-gray-600">{subtitle}</p>
                     <div className="mt-8">{children}</div>
                     <p className="mt-8 text-center text-sm text-gray-600">{footer}</p>

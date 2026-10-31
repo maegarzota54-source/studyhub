@@ -17,7 +17,7 @@ export default function Admin({ metrics, users, groups, flagged }) {
             <Btn variant="accent" onClick={() => router.delete(route('admin.messages.destroy', m.id))}>Remove</Btn>
           </div>))}
       </Card>
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card><h2 className="mb-2 font-semibold">Users</h2>
           {users.map((u) => (
             <div key={u.id} className="flex items-center justify-between border-b border-gray-100 py-2 text-sm last:border-0">

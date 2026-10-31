@@ -60,6 +60,7 @@ class DashboardController extends Controller
                 'hours_week' => round($weekMinutes / 60, 1),
                 'tasks_done_week' => Task::where('assignee_id', $u->id)->where('status', 'completed')->where('updated_at', '>=', $weekStart)->count(),
             ],
+            'suggested' => \App\Support\GroupMatcher::suggest($u, 3),
             'weeklyGoal' => self::WEEKLY_GOAL_HOURS,
             'streak' => $streak,
             'chart' => $chart,

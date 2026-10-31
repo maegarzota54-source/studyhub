@@ -20,7 +20,7 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
     return (
         <AppLayout title="Messages">
             <Head title="Messages" />
-            <div className="grid gap-4 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                 {/* ---------- left: every study group (with its picture) + direct messages ---------- */}
                 <button type="button" onClick={() => setShowConversations((shown) => !shown)}
                     aria-expanded={showConversations} aria-controls="conversation-list"
@@ -35,7 +35,7 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
                         <div className="space-y-3">
                             {groups.map((g) => (
                                 <Link key={g.id} href={route('messages.index', { group: g.id })} aria-current={group?.id === g.id ? 'true' : undefined}
-                                    className={`block overflow-hidden rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg ${group?.id === g.id ? 'ring-2 ring-[#FBB02D] ring-offset-2 ring-offset-[#EBF2FA]' : ''}`}>
+                                    className={`block overflow-hidden rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg ${group?.id === g.id ? 'ring-2 ring-[#2EC4B6] ring-offset-2 ring-offset-[#F5EFE6]' : ''}`}>
                                     <GroupCover group={g} className="h-24">
                                         <div className="absolute right-2 top-2"><ActiveBadge groupId={g.id} onCover /></div>
                                         <div className="absolute inset-x-0 bottom-0 p-2.5 text-white"><b className="block truncate text-sm">{g.title}</b><span className="block truncate text-xs text-white/80">{g.members_count} members · {g.topic}</span></div>
@@ -50,7 +50,7 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
                         {contacts.length === 0 && <p className="text-sm text-gray-500">Join a circle to start chatting.</p>}
                         {contacts.map((c) => (
                             <Link key={c.id} href={route('messages.index', { user_id: c.id })}
-                                className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm ${peer?.id === c.id ? 'bg-[#038666]/15' : 'hover:bg-black/5'}`}>
+                                className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm ${peer?.id === c.id ? 'bg-[#0B8A94]/15' : 'hover:bg-black/5'}`}>
                                 <img src={c.avatar_url} className="h-7 w-7 rounded-full" alt="" />
                                 <span className="min-w-0 flex-1"><span className="block truncate">{c.name}</span>
                                     {c.last_message && <span className="block truncate text-xs text-gray-500">{c.last_message}</span>}</span>
@@ -61,7 +61,7 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
                 </div>
 
                 {/* ---------- right: the open conversation ---------- */}
-                <div className="space-y-3 lg:col-span-3">
+                <div className="min-w-0 space-y-3 lg:col-span-3">
                     {group ? (<>
                         <GroupCover group={group} className="h-24 rounded-2xl">
                             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-white">
@@ -69,7 +69,7 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
                                 <ActiveBadge groupId={group.id} onCover />
                             </div>
                         </GroupCover>
-                        <div className="grid gap-4 xl:grid-cols-5">
+                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
                             <div className="xl:col-span-3">
                                 <ChatPanel threaded messages={messages} channel={`group.${group.id}`} postUrl={route('messages.group', group.id)} />
                             </div>

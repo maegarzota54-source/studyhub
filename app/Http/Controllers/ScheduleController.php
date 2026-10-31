@@ -11,11 +11,13 @@ class ScheduleController extends Controller
     public function index(Request $request) {
         $u = $request->user();
         $month = \Carbon\Carbon::parse($request->month ?? now())->startOfMonth();
+        $events = Schedule::visibleTo($u)->with(['group:id,title', 'attendees:id,name,avatar', 'user:id,name,avatar'])
+            ->whereBetween('starts_at', [$month->copy()->startOfWeek(), $month->copy()->endOfMonth()->endOfWeek()])
+            ->orderBy('starts_at')->get();
+        Schedule::flagCompletable($events, $u);
         return Inertia::render('Schedule/Index', [
             'month' => $month->format('Y-m'),
-            'events' => Schedule::visibleTo($u)->with(['group:id,title', 'attendees:id,name,avatar', 'user:id,name,avatar'])
-                ->whereBetween('starts_at', [$month->copy()->startOfWeek(), $month->copy()->endOfMonth()->endOfWeek()])
-                ->orderBy('starts_at')->get(),
+            'events' => $events,
             'groups' => $u->groups()->with('members:id,name,avatar')->get(['study_groups.id', 'title']),
         ]);
     }
@@ -45,6 +47,15 @@ class ScheduleController extends Controller
         };
         foreach ($recipients as $r) $r->notify(new StudyHubNotice("New session: {$event->title}", '/schedule'));
         return back()->with('success', 'Added to the schedule.');
+    }
+
+    /** Mark a study session as completed (or reopen it). Only the host, a circle admin or a site admin. */
+    public function complete(Request $request, Schedule $schedule) {
+        $u = $request->user();
+        abort_unless(Schedule::visibleTo($u)->whereKey($schedule->id)->exists() && $schedule->canComplete($u), 403);
+        $done = $schedule->completed_at === null;
+        $schedule->forceFill(['completed_at' => $done ? now() : null, 'completed_by' => $done ? $u->id : null])->save();
+        return back()->with('success', $done ? 'Session marked as completed.' : 'Session reopened.');
     }
 
     public function destroy(Request $request, Schedule $schedule) {

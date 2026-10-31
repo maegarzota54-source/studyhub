@@ -5,8 +5,9 @@ import {
     LineChart, MessageSquare, Pause, Play, Plus, Search, Square, Users,
 } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
+import SuggestedGroups from '@/Components/SuggestedGroups';
 
-const G = '#355E3B', R = '#E30B5C', DARK = '#1F2937';
+const G = '#12315F', R = '#E30B5C', DARK = '#1F2937';
 
 const Card = ({ className = '', children }) => <section className={`rounded-2xl border border-gray-200 bg-white ${className}`}>{children}</section>;
 const Head2 = ({ Icon, title, action }) => (
@@ -14,7 +15,7 @@ const Head2 = ({ Icon, title, action }) => (
         <h2 className="flex items-center gap-2 font-semibold text-[#1F2937]"><Icon size={18} color={G} aria-hidden="true" /> {title}</h2>{action}
     </header>
 );
-const More = ({ href, children }) => <Link href={href} className="flex items-center gap-1 text-sm font-medium text-[#355E3B] hover:underline">{children}<ArrowRight size={14} /></Link>;
+const More = ({ href, children }) => <Link href={href} className="flex items-center gap-1 text-sm font-medium text-[#12315F] hover:underline">{children}<ArrowRight size={14} /></Link>;
 
 /* ---------- hero ring ---------- */
 function GoalRing({ hours, goal, ready }) {
@@ -60,12 +61,12 @@ function FocusTimer({ groups }) {
         <section className="rounded-2xl p-5 text-white" style={{ background: DARK }}>
             <h2 className="flex items-center gap-2 font-semibold"><Clock size={18} aria-hidden="true" /> Focus timer</h2>
             <p className="mt-4 text-center font-mono text-5xl font-bold tabular-nums" aria-live="off">{t}</p>
-            <div className="mt-4 grid gap-2">
-                <select value={circle} onChange={(e) => setCircle(e.target.value)} aria-label="Study circle" className="rounded-lg border-0 bg-white/10 px-3 py-2 text-sm text-white focus:ring-2 focus:ring-[#E30B5C]">
+            <div className="mt-4 grid grid-cols-1 gap-2">
+                <select value={circle} onChange={(e) => setCircle(e.target.value)} aria-label="Study circle" className="w-full min-w-0 max-w-full rounded-lg border-0 bg-white/10 px-3 py-2 text-sm text-white focus:ring-2 focus:ring-[#E30B5C]">
                     <option value="" className="text-black">Personal study</option>
                     {groups.map((g) => <option key={g.id} value={g.id} className="text-black">{g.title}</option>)}
                 </select>
-                <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="What are you studying?" aria-label="Topic" className="rounded-lg border-0 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/50 focus:ring-2 focus:ring-[#E30B5C]" />
+                <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="What are you studying?" aria-label="Topic" className="w-full min-w-0 max-w-full rounded-lg border-0 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/50 focus:ring-2 focus:ring-[#E30B5C]" />
             </div>
             <div className="mt-4 flex gap-2">
                 <button onClick={() => setRunning(!running)} className="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 font-semibold transition-transform active:scale-95" style={{ background: running ? '#4B5563' : R }}>
@@ -83,7 +84,7 @@ function FocusTimer({ groups }) {
 }
 
 /* ---------- page ---------- */
-export default function Dashboard({ stats, weeklyGoal, streak, chart, groups, sessions, tasks, notifications }) {
+export default function Dashboard({ suggested = [], stats, weeklyGoal, streak, chart, groups, sessions, tasks, notifications }) {
     const user = usePage().props.auth.user;
     const [ready, setReady] = useState(false);
     const [hover, setHover] = useState(null);
@@ -106,14 +107,14 @@ export default function Dashboard({ stats, weeklyGoal, streak, chart, groups, se
     };
 
     const actions = [['Find a circle', 'groups.find', Search], ['New circle', 'groups.index', Plus], ['Messages', 'messages.index', MessageSquare], ['Add task', 'tasks.index', CheckSquare], ['Schedule', 'schedule.index', CalendarDays], ['Notes & files', 'files.index', FolderOpen]];
-    const kpis = [['My circles', stats.groups, Users, G, 'groups.index'], ['Upcoming sessions', stats.upcoming, CalendarDays, '#4a7c52', 'schedule.index'], ['Tasks due', stats.tasks_due, CheckSquare, R, 'tasks.index'], ['Hours this week', stats.hours_week, Clock, DARK, 'progress.index']];
+    const kpis = [['My circles', stats.groups, Users, G, 'groups.index'], ['Upcoming sessions', stats.upcoming, CalendarDays, '#1E4E8C', 'schedule.index'], ['Tasks due', stats.tasks_due, CheckSquare, R, 'tasks.index'], ['Hours this week', stats.hours_week, Clock, DARK, 'progress.index']];
 
     return (
         <AppLayout title="Dashboard">
             <Head title="Dashboard" />
 
             {/* HERO */}
-            <section className="relative overflow-hidden rounded-2xl p-6 text-white md:p-8" style={{ background: 'linear-gradient(135deg,#355E3B 0%,#2a4a2f 55%,#1d3321 100%)' }}>
+            <section className="relative overflow-hidden rounded-2xl p-6 text-white md:p-8" style={{ background: 'linear-gradient(135deg,#12315F 0%,#0E2A55 55%,#0A1F44 100%)' }}>
                 <span className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5" />
                 <span className="pointer-events-none absolute -bottom-20 right-40 h-48 w-48 rounded-full" style={{ background: 'rgba(227,11,92,.18)' }} />
                 <div className="relative flex flex-wrap items-center justify-between gap-6">
@@ -134,23 +135,43 @@ export default function Dashboard({ stats, weeklyGoal, streak, chart, groups, se
                 </div>
             </section>
 
+            {/* GETTING STARTED (new users with no circle yet) */}
+            {stats.groups === 0 && (
+                <Card className="mt-6 p-5">
+                    <h2 className="font-semibold text-[#1F2937]">Getting started</h2>
+                    <p className="mt-1 text-sm text-gray-600">Three quick steps to get the most out of StudyHub.</p>
+                    <ol className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        {[['1', 'Complete your profile', 'Add your course, subjects and availability so we can match you.', 'profile.edit'],
+                          ['2', 'Join a circle', 'Browse study circles or create your own.', 'groups.find'],
+                          ['3', 'Say hi', 'Send a message to your new circle and plan your first session.', 'messages.index']].map(([n, t, d, r]) => (
+                            <li key={n}>
+                                <Link href={route(r)} className="flex h-full gap-3 rounded-xl border border-gray-200 p-4 transition hover:border-[#12315F] hover:shadow">
+                                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#12315F] text-sm font-semibold text-white" aria-hidden="true">{n}</span>
+                                    <span><span className="block font-medium text-[#1F2937]">{t}</span><span className="block text-sm text-gray-600">{d}</span></span>
+                                </Link>
+                            </li>
+                        ))}
+                    </ol>
+                </Card>
+            )}
+
             {/* KPI CARDS */}
             <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
                 {kpis.map(([label, value, Icon, color, name]) => (
-                    <Link key={label} href={route(name)} className="group flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-[#355E3B]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E30B5C]">
+                    <Link key={label} href={route(name)} className="group flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-[#12315F]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E30B5C]">
                         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white transition-transform group-hover:scale-110" style={{ background: color }}><Icon size={22} aria-hidden="true" /></span>
                         <span><span className="block text-2xl font-bold leading-none text-[#1F2937]">{value}</span><span className="text-sm text-gray-500">{label}</span></span>
                     </Link>
                 ))}
             </div>
 
-            <div className="mt-6 grid gap-6 lg:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
                 {/* LEFT */}
-                <div className="space-y-6 lg:col-span-2">
+                <div className="min-w-0 space-y-6 lg:col-span-2">
                     <Card>
                         <Head2 Icon={LineChart} title="This week's study time" action={<More href={route('progress.index')}>Details</More>} />
                         <div className="p-5">
-                            <p className="text-3xl font-bold text-[#355E3B]">{hover !== null ? `${chart[hover].hours} h` : `${total} h`}</p>
+                            <p className="text-3xl font-bold text-[#12315F]">{hover !== null ? `${chart[hover].hours} h` : `${total} h`}</p>
                             <p className="text-sm text-gray-500">{hover !== null ? chart[hover].date : 'Last 7 days · dashed line = daily goal'}</p>
                             <div className="relative mt-4 flex h-44 items-end gap-3">
                                 <span className="pointer-events-none absolute left-0 right-0 border-t border-dashed" style={{ bottom: `${dailyGoalPct}%`, borderColor: R }} aria-hidden="true" />
@@ -158,7 +179,7 @@ export default function Dashboard({ stats, weeklyGoal, streak, chart, groups, se
                                     <button key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(i)} onBlur={() => setHover(null)}
                                         aria-label={`${c.date}: ${c.hours} hours`} className="flex h-full flex-1 items-end focus:outline-none">
                                         <span className="block w-full rounded-t-lg transition-all duration-700 ease-out"
-                                            style={{ height: ready ? `${Math.max((c.hours / max) * 100, c.hours ? 4 : 2)}%` : '0%', background: hover === i ? R : c.today ? '#4a7c52' : G, opacity: c.hours ? 1 : 0.2, transitionDelay: `${i * 60}ms` }} />
+                                            style={{ height: ready ? `${Math.max((c.hours / max) * 100, c.hours ? 4 : 2)}%` : '0%', background: hover === i ? R : c.today ? '#1E4E8C' : G, opacity: c.hours ? 1 : 0.2, transitionDelay: `${i * 60}ms` }} />
                                     </button>
                                 ))}
                             </div>
@@ -166,14 +187,16 @@ export default function Dashboard({ stats, weeklyGoal, streak, chart, groups, se
                         </div>
                     </Card>
 
+                    {suggested.length > 0 && <Card className="!p-0"><SuggestedGroups suggested={suggested} compact /></Card>}
+
                     <Card>
                         <Head2 Icon={Users} title="My study circles" action={<More href={route('groups.index')}>All circles</More>} />
-                        <div className="grid gap-3 p-5 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2">
                             {groups.map((g, i) => (
-                                <Link key={g.id} href={route('groups.show', g.id)} className="group flex items-center gap-3 rounded-xl border border-gray-200 p-3 transition-all hover:border-[#355E3B] hover:shadow-md">
-                                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white" style={{ background: [G, R, DARK, '#4a7c52'][i % 4] }}>{g.title[0].toUpperCase()}</span>
+                                <Link key={g.id} href={route('groups.show', g.id)} className="group flex items-center gap-3 rounded-xl border border-gray-200 p-3 transition-all hover:border-[#12315F] hover:shadow-md">
+                                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white" style={{ background: [G, R, DARK, '#1E4E8C'][i % 4] }}>{g.title[0].toUpperCase()}</span>
                                     <span className="min-w-0 flex-1"><b className="block truncate text-sm">{g.title}</b><span className="block truncate text-xs text-gray-500">{g.topic} · {g.members_count} member{g.members_count !== 1 && 's'}</span></span>
-                                    <ArrowRight size={16} className="text-gray-300 transition-all group-hover:translate-x-1 group-hover:text-[#355E3B]" />
+                                    <ArrowRight size={16} className="text-gray-300 transition-all group-hover:translate-x-1 group-hover:text-[#12315F]" />
                                 </Link>
                             ))}
                             <Link href={route('groups.find')} className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 p-3 text-sm font-medium text-gray-500 transition-colors hover:border-[#E30B5C] hover:text-[#E30B5C]">
@@ -190,7 +213,7 @@ export default function Dashboard({ stats, weeklyGoal, streak, chart, groups, se
                                 const d = due(t.due_date), isDone = done[t.id];
                                 return (
                                     <li key={t.id} className="flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-gray-50">
-                                        <button onClick={() => complete(t.id)} aria-label={`Mark "${t.title}" complete`} className="shrink-0 text-gray-300 transition-colors hover:text-[#355E3B]">
+                                        <button onClick={() => complete(t.id)} aria-label={`Mark "${t.title}" complete`} className="shrink-0 text-gray-300 transition-colors hover:text-[#12315F]">
                                             {isDone ? <CheckCircle2 size={22} color={G} /> : <Circle size={22} />}
                                         </button>
                                         <span className="min-w-0 flex-1"><span className={`block truncate text-sm font-medium ${isDone ? 'text-gray-400 line-through' : ''}`}>{t.title}</span>
@@ -215,9 +238,9 @@ export default function Dashboard({ stats, weeklyGoal, streak, chart, groups, se
                                 const d = new Date(s.starts_at);
                                 return (
                                     <li key={s.id} className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-gray-50">
-                                        <span className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-[#eef4ef] text-[#355E3B]"><span className="text-[10px] font-semibold uppercase leading-none">{d.toLocaleString([], { month: 'short' })}</span><span className="text-lg font-bold leading-tight">{d.getDate()}</span></span>
+                                        <span className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-[#EEF3FA] text-[#12315F]"><span className="text-[10px] font-semibold uppercase leading-none">{d.toLocaleString([], { month: 'short' })}</span><span className="text-lg font-bold leading-tight">{d.getDate()}</span></span>
                                         <span className="min-w-0 flex-1"><b className="block truncate text-sm">{s.title}</b><span className="block truncate text-xs text-gray-500">{d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}{s.group && ` · ${s.group.title}`}</span></span>
-                                        {s.group && <Link href={route('groups.show', s.study_group_id)} aria-label={`Open ${s.group.title}`} className="rounded-lg p-2 text-[#355E3B] hover:bg-[#eef4ef]"><ArrowRight size={16} /></Link>}
+                                        {s.group && <Link href={route('groups.show', s.study_group_id)} aria-label={`Open ${s.group.title}`} className="rounded-lg p-2 text-[#12315F] hover:bg-[#EEF3FA]"><ArrowRight size={16} /></Link>}
                                     </li>
                                 );
                             })}
@@ -225,7 +248,7 @@ export default function Dashboard({ stats, weeklyGoal, streak, chart, groups, se
                     </Card>
 
                     <Card>
-                        <Head2 Icon={Bell} title="Notifications" action={notifications.some((n) => !n.read) && <button onClick={() => router.post(route('notifications.read'), {}, { preserveScroll: true })} className="text-sm font-medium text-[#355E3B] hover:underline">Mark all read</button>} />
+                        <Head2 Icon={Bell} title="Notifications" action={notifications.some((n) => !n.read) && <button onClick={() => router.post(route('notifications.read'), {}, { preserveScroll: true })} className="text-sm font-medium text-[#12315F] hover:underline">Mark all read</button>} />
                         <ul className="p-3">
                             {notifications.length === 0 && <li className="px-3 py-6 text-center text-sm text-gray-500">You're all caught up.</li>}
                             {notifications.map((n) => (

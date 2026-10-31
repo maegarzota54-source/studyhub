@@ -9,6 +9,7 @@ export default {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.jsx',
     ],
+    blocklist: ['[-:T]'],
 
     theme: {
         extend: {
@@ -25,8 +26,8 @@ export default {
             },
             colors: {
                 hunter: {
-                    50: '#eef4ef', 100: '#d6e5d9', 500: '#4a7c52', 600: '#3f6a46',
-                    700: '#355E3B', 800: '#2a4a2f', 900: '#1d3321',
+                    50: '#EEF3FA', 100: '#D6E0EF', 500: '#1E4E8C', 600: '#183F73',
+                    700: '#12315F', 800: '#0E2A55', 900: '#0A1F44',
                 },
                 raspberry: { 500: '#E30B5C', 600: '#C81E51' },
                 cool: { 100: '#F3F4F6' },

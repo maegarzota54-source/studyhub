@@ -15,7 +15,10 @@ Route::get('/', function () {
 });
 
 
+Route::get('/privacy', fn () => Inertia::render('Privacy'))->name('privacy');
+
 Route::middleware('auth')->group(function () {
+    Route::get('/profile/export', [ProfileController::class, 'export'])->name('profile.export');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -24,4 +27,5 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 require __DIR__.'/studyhub-live.php';   // must be before studyhub.php
+require __DIR__.'/studyhub-chat.php';
 require __DIR__.'/studyhub.php';

@@ -17,7 +17,12 @@ export default function ProfileDetailsForm({ status }) {
             goal: prefs.goal ?? '',
             mode: prefs.mode ?? '',
         },
+        subjects: user.subjects ?? [],
+        availability: { days: user.availability?.days ?? [], time: user.availability?.time ?? '' },
     });
+    const [subjectsText, setSubjectsText] = useState((user.subjects ?? []).join(', '));
+    const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const toggleDay = (d) => form.setData('availability', { ...form.data.availability, days: form.data.availability.days.includes(d) ? form.data.availability.days.filter((x) => x !== d) : [...form.data.availability.days, d] });
 
     // Preview of the newly picked photo (created once, cleaned up when it changes).
     const [preview, setPreview] = useState(null);
@@ -67,7 +72,7 @@ export default function ProfileDetailsForm({ status }) {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                     <label className="mb-1 block text-sm font-medium" htmlFor="name">Name</label>
                     <input id="name" className={inputCls} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
@@ -86,7 +91,7 @@ export default function ProfileDetailsForm({ status }) {
                 {err('bio')}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
                     <label className="mb-1 block text-sm font-medium" htmlFor="skill">Skill level</label>
                     <select id="skill" className={inputCls} value={form.data.study_preferences.skill_level} onChange={setPref('skill_level')}>
@@ -113,8 +118,36 @@ export default function ProfileDetailsForm({ status }) {
                 </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div>
+                <label className="mb-1 block text-sm font-medium" htmlFor="subjects">Subjects you study (separate with commas)</label>
+                <input id="subjects" className={inputCls} placeholder="e.g. Programming, Calculus, Networking" value={subjectsText}
+                    onChange={(e) => { setSubjectsText(e.target.value); form.setData('subjects', e.target.value.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 10)); }} />
+                {err('subjects')}
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <fieldset>
+                    <legend className="mb-1 block text-sm font-medium">Days you are free to study</legend>
+                    <div className="flex flex-wrap gap-2">
+                        {DAYS.map((d) => (
+                            <label key={d} className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm has-[:checked]:border-[#0B8A94] has-[:checked]:bg-[#0B8A94]/10">
+                                <input type="checkbox" className="rounded" checked={form.data.availability.days.includes(d)} onChange={() => toggleDay(d)} /> {d}
+                            </label>
+                        ))}
+                    </div>
+                </fieldset>
+                <div>
+                    <label className="mb-1 block text-sm font-medium" htmlFor="avail-time">Best time of day</label>
+                    <select id="avail-time" className={inputCls} value={form.data.availability.time} onChange={(e) => form.setData('availability', { ...form.data.availability, time: e.target.value })}>
+                        <option value="">Any time</option><option value="morning">Morning</option><option value="afternoon">Afternoon</option><option value="evening">Evening</option>
+                    </select>
+                </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
                 <Btn disabled={form.processing}>Save changes</Btn>
+                <a href={route('profile.export')} className="text-sm font-semibold underline">Download my data</a>
+                <a href={route('privacy')} className="text-sm underline">Privacy notice</a>
                 {status === 'profile-updated' && <span className="text-sm text-hunter-700">Saved.</span>}
             </div>
         </form>

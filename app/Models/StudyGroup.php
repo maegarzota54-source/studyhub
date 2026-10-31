@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 class StudyGroup extends Model
 {
     protected $guarded = ['id'];
-    protected function casts(): array { return ['target_date' => 'date:Y-m-d']; }
+    protected function casts(): array { return ['target_date' => 'date:Y-m-d', 'meeting_days' => 'array']; }
+    public function ratings() { return $this->hasMany(GroupRating::class); }
     public function owner() { return $this->belongsTo(User::class, 'owner_id'); }
     public function members() { return $this->belongsToMany(User::class, 'group_members')->withPivot('role')->withTimestamps(); }
     public function messages() { return $this->hasMany(Message::class); }

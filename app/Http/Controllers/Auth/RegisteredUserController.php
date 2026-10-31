@@ -35,12 +35,14 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+            'privacy_consent' => ['accepted'],
+        ], ['privacy_consent.accepted' => 'You must agree to the Privacy Notice to create an account.']);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'privacy_consent_at' => now(),
         ]);
 
         event(new Registered($user));
