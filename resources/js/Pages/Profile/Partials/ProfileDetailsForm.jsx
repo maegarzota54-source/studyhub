@@ -72,7 +72,7 @@ export default function ProfileDetailsForm({ status }) {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                     <label className="mb-1 block text-sm font-medium" htmlFor="name">Name</label>
                     <input id="name" className={inputCls} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
@@ -91,7 +91,7 @@ export default function ProfileDetailsForm({ status }) {
                 {err('bio')}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
                     <label className="mb-1 block text-sm font-medium" htmlFor="skill">Skill level</label>
                     <select id="skill" className={inputCls} value={form.data.study_preferences.skill_level} onChange={setPref('skill_level')}>
@@ -125,7 +125,7 @@ export default function ProfileDetailsForm({ status }) {
                 {err('subjects')}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <fieldset>
                     <legend className="mb-1 block text-sm font-medium">Days you are free to study</legend>
                     <div className="flex flex-wrap gap-2">

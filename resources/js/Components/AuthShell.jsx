@@ -73,7 +73,7 @@ export function PasswordField({ id, label, error, right, ...props }) {
 
 export default function AuthShell({ title, subtitle, youName = '', footer, children }) {
     return (
-        <div className="grid min-h-screen bg-[#F3F4F6] lg:grid-cols-2">
+        <div className="grid grid-cols-1 min-h-screen bg-[#F3F4F6] lg:grid-cols-2">
             <ShStyle />
             <aside className="relative hidden flex-col items-center justify-between overflow-hidden px-10 py-10 lg:flex"
                 style={{ background: 'radial-gradient(circle at 30% 20%, #1E4E8C 0%, #12315F 45%, #0A1F44 100%)' }}>

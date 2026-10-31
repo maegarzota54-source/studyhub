@@ -116,20 +116,20 @@ export default function Welcome({ canLogin, canRegister }) {
             <ShStyle />
 
             <header className="sticky top-0 z-30 border-b border-gray-200/70 bg-[#F3F4F6]/85 backdrop-blur">
-                <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-                    <Link href="/" className="sh-display flex items-center gap-2 text-lg font-extrabold text-[#12315F]">
-                        <img src="/images/studyhub-logo.png" alt="" className="h-10 w-10 rounded-full bg-white" /> StudyHub-Group Circle System
+                <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 sm:px-6">
+                    <Link href="/" className="sh-display flex min-w-0 items-center gap-2 text-sm font-extrabold leading-tight text-[#12315F] sm:text-lg">
+                        <img src="/images/studyhub-logo.png" alt="" className="h-9 w-9 shrink-0 rounded-full bg-white sm:h-10 sm:w-10" /> <span className="min-w-0">StudyHub-Group Circle System</span>
                     </Link>
-                    <nav className="flex items-center gap-2">
+                    <nav className="flex shrink-0 items-center gap-2 whitespace-nowrap">
                         {auth?.user ? <Link href={route('dashboard')} className="sh-btn sh-btn-primary !py-2">Open dashboard</Link> : (<>
-                            {canLogin && <Link href={route('login')} className="sh-btn sh-btn-ghost !py-2">Log in</Link>}
-                            {canRegister && <Link href={route('register')} className="sh-btn sh-btn-accent !py-2">Sign up</Link>}
+                            {canLogin && <Link href={route('login')} className="sh-btn sh-btn-ghost whitespace-nowrap !px-3 !py-2 sm:!px-4">Log in</Link>}
+                            {canRegister && <Link href={route('register')} className="sh-btn sh-btn-accent whitespace-nowrap !px-3 !py-2 sm:!px-4">Sign up</Link>}
                         </>)}
                     </nav>
                 </div>
             </header>
 
-            <section className="mx-auto grid max-w-6xl items-center gap-8 px-6 pb-16 pt-12 lg:grid-cols-2">
+            <section className="mx-auto grid grid-cols-1 max-w-6xl items-center gap-8 px-6 pb-16 pt-12 lg:grid-cols-2">
                 <div className="sh-fade">
                     <h1 className="sh-display text-5xl font-extrabold leading-[1.05] text-[#0A1F44] md:text-6xl">Study is better with a circle.</h1>
                     <p className="mt-5 max-w-lg text-lg text-gray-600">
@@ -165,8 +165,8 @@ export default function Welcome({ canLogin, canRegister }) {
                 <div className="mx-auto max-w-6xl px-6 py-16">
                     <h2 className="sh-display text-3xl font-extrabold text-[#0A1F44]">Everything your circle needs, in one place</h2>
                     <p className="mt-2 text-gray-600">Pick a feature and try it. These previews are live.</p>
-                    <div className="mt-8 grid gap-6 lg:grid-cols-5">
-                        <div className="space-y-2 lg:col-span-2" role="tablist" aria-label="Features">
+                    <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-5">
+                        <div className="min-w-0 space-y-2 lg:col-span-2" role="tablist" aria-label="Features">
                             {TABS.map(({ id, label, Icon, blurb }) => (
                                 <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className="sh-tab">
                                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: tab === id ? '#E30B5C' : '#12315F' }}><Icon size={18} /></span>
@@ -174,7 +174,7 @@ export default function Welcome({ canLogin, canRegister }) {
                                 </button>
                             ))}
                         </div>
-                        <div className="lg:col-span-3">
+                        <div className="min-w-0 lg:col-span-3">
                             <div className="sh-card h-96 overflow-hidden shadow-xl shadow-[#12315F]/10">
                                 <div className="flex items-center gap-2 bg-[#12315F] px-4 py-2 text-sm font-semibold text-white">
                                     <span className="h-2.5 w-2.5 rounded-full bg-[#E30B5C]" /> Programming Study Group
@@ -188,7 +188,7 @@ export default function Welcome({ canLogin, canRegister }) {
 
             <section className="mx-auto max-w-6xl px-6 py-16">
                 <h2 className="sh-display text-3xl font-extrabold text-[#0A1F44]">Up and running in three steps</h2>
-                <div className="mt-8 grid gap-4 md:grid-cols-3">
+                <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
                     {[['Find your people', 'Search circles by subject and skill level, or create your own.'], ['Study together', 'Chat, jump on a call, share files and plan sessions.'], ['See your progress', 'Log hours, finish tasks and watch your circle improve.']].map(([t, d], i) => (
                         <div key={t} className="sh-card p-6 transition-transform hover:-translate-y-1">
                             <span className="sh-display flex h-10 w-10 items-center justify-center rounded-full bg-[#12315F] font-bold text-white">{i + 1}</span>

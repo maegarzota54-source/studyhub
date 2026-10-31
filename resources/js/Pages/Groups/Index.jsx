@@ -17,7 +17,7 @@ function CreateGroup() {
     return (
         <Card>
             <h2 className="mb-3 flex items-center gap-2 font-semibold"><Plus size={18} aria-hidden="true" /> Create a study circle</h2>
-            <form onSubmit={(e) => { e.preventDefault(); f.post(route('groups.store'), { forceFormData: true }); }} className="grid gap-3 md:grid-cols-2">
+            <form onSubmit={(e) => { e.preventDefault(); f.post(route('groups.store'), { forceFormData: true }); }} className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div><label className={label} htmlFor="g-title">Group title</label><input id="g-title" className={inputCls} value={f.data.title} onChange={set('title')} />{err('title')}</div>
                 <div><label className={label} htmlFor="g-topic">Topic of study</label><input id="g-topic" className={inputCls} value={f.data.topic} onChange={set('topic')} />{err('topic')}</div>
                 <div><label className={label} htmlFor="g-date">Target date</label><input id="g-date" type="date" className={inputCls} value={f.data.target_date} onChange={set('target_date')} />{err('target_date')}</div>
@@ -113,9 +113,9 @@ function MineCard({ g }) {
     const admin = g.pivot?.role === 'admin';
     const upload = (e) => { const file = e.target.files[0]; if (file) router.post(route('groups.cover', g.id), { cover: file }, { forceFormData: true, preserveScroll: true }); };
     return (
-        <article className="overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:-translate-y-1 hover:shadow-xl">
+        <article className="relative overflow-hidden rounded-xl border border-gray-200 bg-white transition-all focus-within:ring-2 focus-within:ring-[#2EC4B6] hover:border-[#2EC4B6] hover:shadow-xl">
             <GroupCover group={g} className="h-28">
-                <div className="absolute right-2 top-2 flex items-center gap-1.5">
+                <div className="absolute right-2 top-2 z-10 flex items-center gap-1.5">
                     <ActiveBadge groupId={g.id} onCover />
                     {admin && <label className="cursor-pointer rounded-full bg-[#0A1F44]/70 p-1.5 text-white hover:bg-[#0A1F44]" title="Change group picture"><Camera size={14} /><input type="file" accept="image/*" className="sr-only" onChange={upload} /></label>}
                 </div>
@@ -124,7 +124,7 @@ function MineCard({ g }) {
             <div className="px-4 pt-3"><ActivePeople groupId={g.id} /></div>
             <div className="flex items-center justify-between p-4">
                 <span className="flex items-center gap-1 text-xs text-gray-500"><Users size={13} aria-hidden="true" /> {g.members_count}/{g.max_members} members{admin && ' · admin'}</span>
-                <Link href={route('groups.show', g.id)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#2EC4B6] px-4 py-2 text-sm font-semibold text-[#0A1F44] transition-all hover:brightness-95 active:scale-95">Joined <ArrowRight size={14} /></Link>
+                <Link href={route('groups.show', g.id)} className="inline-flex items-center gap-1.5 rounded-lg after:absolute after:inset-0 after:content-[''] bg-[#2EC4B6] px-4 py-2 text-sm font-semibold text-[#0A1F44] transition-colors hover:bg-[#25B3A6]">Joined <ArrowRight size={14} /></Link>
             </div>
         </article>
     );
@@ -191,7 +191,7 @@ export default function GroupsIndex({ mode, groups, filters = {}, topics = [], s
                                 </Link>
                             )}
                         </div>
-                        {picks.length > 0 && <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{picks.map((g) => <FindCard key={`s${g.id}`} g={g} />)}</div>}
+                        {picks.length > 0 && <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{picks.map((g) => <FindCard key={`s${g.id}`} g={g} />)}</div>}
                     </section>
                 );
             })()}
@@ -216,7 +216,7 @@ export default function GroupsIndex({ mode, groups, filters = {}, topics = [], s
                 </section>
             )}
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {list.length === 0 && <p className="text-sm text-gray-500">{mode === 'find' ? 'No circles match. Try another subject or clear the filters.' : "You haven't joined a circle yet."}</p>}
                 {list.map((g) => (mode === 'find' ? <FindCard key={g.id} g={g} /> : <MineCard key={g.id} g={g} />))}
             </div>

@@ -11,8 +11,8 @@ export default function MemberManager({ group, members, isGroupAdmin, me }) {
     const leave = () => window.confirm('Leave this circle?') && router.delete(route('groups.leave', group.id));
 
     return (
-        <div className="grid gap-4 lg:grid-cols-3">
-            <Card className="lg:col-span-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <Card className="min-w-0 lg:col-span-2">
                 <h3 className="mb-3 text-sm font-semibold">Members ({members.length}/{group.max_members})</h3>
                 <ul className="divide-y divide-gray-100">
                     {members.map((m) => {

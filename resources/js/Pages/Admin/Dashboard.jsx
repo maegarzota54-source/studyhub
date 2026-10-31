@@ -21,7 +21,7 @@ export default function Dashboard({ kpis: k, chart, topGroups, recentUsers, feed
                 <Kpi label="Open reports" value={openReports} sub="Flagged content to review" Icon={Flag} tone="#E30B5C" href={route('admin.reports')} />
             </div>
 
-            <div className="mt-6 grid gap-6 xl:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
                 <Panel title="Sign-ups and messages (14 days)" className="xl:col-span-2">
                     <div className="h-72 p-4">
                         <ResponsiveContainer>

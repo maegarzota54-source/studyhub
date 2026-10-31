@@ -260,7 +260,7 @@ export default function Stories({ groups = [], contacts = [] }) {
                 <h2 className="mb-1 font-semibold">Your stories</h2>
                 <p className="mb-3 text-sm text-gray-500">Each one disappears 24 hours after you post it.</p>
                 {(!mine || mine.stories.length === 0) && <p className="text-sm text-gray-500">You have no active stories.</p>}
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {mine?.stories.map((s) => (
                         <div key={s.id} className="flex items-center gap-3 rounded-xl border border-gray-200 p-2">
                             <button type="button" onClick={() => setViewing(groups.indexOf(mine))} aria-label="Open story" className="shrink-0">

@@ -44,8 +44,8 @@ export default function GroupShow({ group, isGroupAdmin, rating, members, messag
       </div>
 
       {tab === 'chat' && (
-        <div className="grid gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-2"><ChatPanel threaded messages={messages} channel={`group.${group.id}`} postUrl={route('messages.group', group.id)} /></div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="min-w-0 lg:col-span-2"><ChatPanel threaded messages={messages} channel={`group.${group.id}`} postUrl={route('messages.group', group.id)} /></div>
           <div className="space-y-3">
             <SharedReader groupId={group.id} />
             <CallPanel targets={members.filter((m) => m.id !== me.id).map((m) => m.id)} people={members} log={{ group_id: group.id }} />
@@ -86,7 +86,7 @@ export default function GroupShow({ group, isGroupAdmin, rating, members, messag
       {tab === 'modules' && (
         <div className="space-y-4">
           <Card>
-            <form onSubmit={(e) => { e.preventDefault(); mod.post(route('files.store'), { forceFormData: true, onSuccess: () => mod.reset('title', 'body', 'file') }); }} className="grid gap-2 md:grid-cols-2">
+            <form onSubmit={(e) => { e.preventDefault(); mod.post(route('files.store'), { forceFormData: true, onSuccess: () => mod.reset('title', 'body', 'file') }); }} className="grid grid-cols-1 gap-2 md:grid-cols-2">
               <input aria-label="Module title" className={inputCls} placeholder="Module title" value={mod.data.title} onChange={(e) => mod.setData('title', e.target.value)} />
               <input type="file" className={inputCls} onChange={(e) => mod.setData('file', e.target.files[0])} />
               <textarea aria-label="What should members learn from this?" className={`${inputCls} md:col-span-2`} placeholder="What should members learn from this?" value={mod.data.body} onChange={(e) => mod.setData('body', e.target.value)} />

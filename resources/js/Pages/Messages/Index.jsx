@@ -20,7 +20,7 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
     return (
         <AppLayout title="Messages">
             <Head title="Messages" />
-            <div className="grid gap-4 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                 {/* ---------- left: every study group (with its picture) + direct messages ---------- */}
                 <button type="button" onClick={() => setShowConversations((shown) => !shown)}
                     aria-expanded={showConversations} aria-controls="conversation-list"
@@ -61,7 +61,7 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
                 </div>
 
                 {/* ---------- right: the open conversation ---------- */}
-                <div className="space-y-3 lg:col-span-3">
+                <div className="min-w-0 space-y-3 lg:col-span-3">
                     {group ? (<>
                         <GroupCover group={group} className="h-24 rounded-2xl">
                             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-white">
@@ -69,7 +69,7 @@ export default function Messages({ contacts = [], peer = null, messages = [], gr
                                 <ActiveBadge groupId={group.id} onCover />
                             </div>
                         </GroupCover>
-                        <div className="grid gap-4 xl:grid-cols-5">
+                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
                             <div className="xl:col-span-3">
                                 <ChatPanel threaded messages={messages} channel={`group.${group.id}`} postUrl={route('messages.group', group.id)} />
                             </div>

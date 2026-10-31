@@ -21,8 +21,8 @@ export default function Schedule({ month, events, groups }) {
   return (
     <AppLayout title="Study Schedule">
       <Head title="Schedule" />
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Card className="min-w-0 lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
             <Btn variant="ghost" onClick={() => go(-1)} aria-label="Previous month">‹</Btn>
             <h2 className="font-semibold">{first.toLocaleString([], { month: 'long', year: 'numeric' })}</h2>

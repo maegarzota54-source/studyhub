@@ -47,7 +47,7 @@ export default function Tasks({ tasks, groups }) {
     <AppLayout title="Tasks & Checklist">
       <Head title="Tasks" />
       <Card className="mb-4">
-        <form onSubmit={(e) => { e.preventDefault(); f.post(route('tasks.store'), { onSuccess: () => f.reset() }); }} className="grid gap-2 md:grid-cols-4">
+        <form onSubmit={(e) => { e.preventDefault(); f.post(route('tasks.store'), { onSuccess: () => f.reset() }); }} className="grid grid-cols-1 gap-2 md:grid-cols-4">
           <input aria-label="Task title" className={`${inputCls} md:col-span-2`} placeholder="Task title" value={f.data.title} onChange={(e) => f.setData('title', e.target.value)} />
           <input type="date" className={inputCls} value={f.data.due_date} onChange={(e) => f.setData('due_date', e.target.value)} aria-label="Due date" />
           <select aria-label="Circle" className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData({ ...f.data, study_group_id: e.target.value, assignee_ids: [] })}>

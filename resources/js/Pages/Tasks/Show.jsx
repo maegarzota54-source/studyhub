@@ -23,8 +23,8 @@ export default function TaskShow({ task, canManage, canEdit, members, groups }) 
     <AppLayout title="Task">
       <Head title={task.title} />
       <Link href={route('tasks.index')} className="mb-3 inline-flex items-center gap-1 text-sm text-hunter-700 hover:underline"><ArrowLeft size={14} /> All tasks</Link>
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="min-w-0 space-y-4 lg:col-span-2">
           <Card>
             {!editing ? (
               <>

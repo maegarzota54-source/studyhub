@@ -70,12 +70,12 @@ export default function SessionCard({ event: e, people = [], me }) {
         </span>
       </div>
       {status !== 'upcoming' && e.can_complete && (
-        <div className="mt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <button type="button" onClick={toggleDone}
             className="inline-flex items-center gap-1.5 rounded-lg border border-hunter-700 px-3 py-1.5 text-sm font-semibold text-hunter-700 hover:bg-hunter-50">
             {status === 'completed' ? <><RotateCcw size={14} aria-hidden="true" /> Reopen session</> : <><CheckCircle2 size={14} aria-hidden="true" /> Mark as completed</>}
           </button>
-          {status === 'completed' && e.completed_at && <span className="ml-2 text-xs text-gray-500">Completed {new Date(e.completed_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>}
+          {status === 'completed' && e.completed_at && <span className="text-xs text-gray-500">Completed {new Date(e.completed_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>}
         </div>
       )}
       {status !== 'ended' && status !== 'completed' && !solo && (

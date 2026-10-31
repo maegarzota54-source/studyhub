@@ -61,12 +61,12 @@ function FocusTimer({ groups }) {
         <section className="rounded-2xl p-5 text-white" style={{ background: DARK }}>
             <h2 className="flex items-center gap-2 font-semibold"><Clock size={18} aria-hidden="true" /> Focus timer</h2>
             <p className="mt-4 text-center font-mono text-5xl font-bold tabular-nums" aria-live="off">{t}</p>
-            <div className="mt-4 grid gap-2">
-                <select value={circle} onChange={(e) => setCircle(e.target.value)} aria-label="Study circle" className="rounded-lg border-0 bg-white/10 px-3 py-2 text-sm text-white focus:ring-2 focus:ring-[#E30B5C]">
+            <div className="mt-4 grid grid-cols-1 gap-2">
+                <select value={circle} onChange={(e) => setCircle(e.target.value)} aria-label="Study circle" className="w-full min-w-0 max-w-full rounded-lg border-0 bg-white/10 px-3 py-2 text-sm text-white focus:ring-2 focus:ring-[#E30B5C]">
                     <option value="" className="text-black">Personal study</option>
                     {groups.map((g) => <option key={g.id} value={g.id} className="text-black">{g.title}</option>)}
                 </select>
-                <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="What are you studying?" aria-label="Topic" className="rounded-lg border-0 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/50 focus:ring-2 focus:ring-[#E30B5C]" />
+                <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="What are you studying?" aria-label="Topic" className="w-full min-w-0 max-w-full rounded-lg border-0 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/50 focus:ring-2 focus:ring-[#E30B5C]" />
             </div>
             <div className="mt-4 flex gap-2">
                 <button onClick={() => setRunning(!running)} className="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 font-semibold transition-transform active:scale-95" style={{ background: running ? '#4B5563' : R }}>
@@ -140,7 +140,7 @@ export default function Dashboard({ suggested = [], stats, weeklyGoal, streak, c
                 <Card className="mt-6 p-5">
                     <h2 className="font-semibold text-[#1F2937]">Getting started</h2>
                     <p className="mt-1 text-sm text-gray-600">Three quick steps to get the most out of StudyHub.</p>
-                    <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <ol className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                         {[['1', 'Complete your profile', 'Add your course, subjects and availability so we can match you.', 'profile.edit'],
                           ['2', 'Join a circle', 'Browse study circles or create your own.', 'groups.find'],
                           ['3', 'Say hi', 'Send a message to your new circle and plan your first session.', 'messages.index']].map(([n, t, d, r]) => (
@@ -165,9 +165,9 @@ export default function Dashboard({ suggested = [], stats, weeklyGoal, streak, c
                 ))}
             </div>
 
-            <div className="mt-6 grid gap-6 lg:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
                 {/* LEFT */}
-                <div className="space-y-6 lg:col-span-2">
+                <div className="min-w-0 space-y-6 lg:col-span-2">
                     <Card>
                         <Head2 Icon={LineChart} title="This week's study time" action={<More href={route('progress.index')}>Details</More>} />
                         <div className="p-5">
@@ -191,7 +191,7 @@ export default function Dashboard({ suggested = [], stats, weeklyGoal, streak, c
 
                     <Card>
                         <Head2 Icon={Users} title="My study circles" action={<More href={route('groups.index')}>All circles</More>} />
-                        <div className="grid gap-3 p-5 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2">
                             {groups.map((g, i) => (
                                 <Link key={g.id} href={route('groups.show', g.id)} className="group flex items-center gap-3 rounded-xl border border-gray-200 p-3 transition-all hover:border-[#12315F] hover:shadow-md">
                                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white" style={{ background: [G, R, DARK, '#1E4E8C'][i % 4] }}>{g.title[0].toUpperCase()}</span>

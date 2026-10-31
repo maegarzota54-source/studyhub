@@ -133,7 +133,7 @@ export default function Files({ items, groups, filters }) {
     <AppLayout title="Notes & Files">
       <Head title="Notes & Files" />
       <Card className="mb-4">
-        <form onSubmit={(e) => { e.preventDefault(); f.post(route('files.store'), { forceFormData: true, onSuccess: () => f.reset('title', 'body', 'file') }); }} className="grid gap-2 md:grid-cols-4">
+        <form onSubmit={(e) => { e.preventDefault(); f.post(route('files.store'), { forceFormData: true, onSuccess: () => f.reset('title', 'body', 'file') }); }} className="grid grid-cols-1 gap-2 md:grid-cols-4">
           <select aria-label="Type" className={inputCls} value={f.data.kind} onChange={(e) => f.setData('kind', e.target.value)}><option value="note">Note</option><option value="file">File</option><option value="module">Study module</option></select>
           <select aria-label="Circle" className={inputCls} value={f.data.study_group_id} onChange={(e) => f.setData('study_group_id', e.target.value)}><option value="">Personal</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select>
           <input aria-label="Title" className={`${inputCls} md:col-span-2`} placeholder="Title" value={f.data.title} onChange={(e) => f.setData('title', e.target.value)} />
@@ -143,11 +143,11 @@ export default function Files({ items, groups, filters }) {
           <Btn disabled={f.processing}>Save</Btn>
         </form>
       </Card>
-      <div className="mb-3 flex gap-2">
-        <select aria-label="Circle" className="rounded-lg border-gray-300 text-sm" value={filters.group_id ?? ''} onChange={(e) => filter('group_id', e.target.value)}>
+      <div className="mb-3 flex flex-wrap gap-2">
+        <select aria-label="Circle" className="max-w-full min-w-0 rounded-lg border-gray-300 text-sm" value={filters.group_id ?? ''} onChange={(e) => filter('group_id', e.target.value)}>
           <option value="">All sources</option><option value="personal">Personal</option>{groups.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
         </select>
-        <select aria-label="Type" className="rounded-lg border-gray-300 text-sm" value={filters.kind ?? ''} onChange={(e) => filter('kind', e.target.value)}>
+        <select aria-label="Type" className="max-w-full min-w-0 rounded-lg border-gray-300 text-sm" value={filters.kind ?? ''} onChange={(e) => filter('kind', e.target.value)}>
           <option value="">All types</option><option value="note">Notes</option><option value="file">Files</option><option value="module">Modules</option>
         </select>
       </div>
